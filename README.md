@@ -4,7 +4,11 @@ Simple LED Lighting — independent architectural lights for NeoForge.
 
 **English first. Brazilian Portuguese follows below. / Português brasileiro abaixo da seção em inglês.**
 
-![Architectural gallery, standard renderer](docs/images/03-architectural-gallery.png)
+[Download Alpha](https://github.com/Tech-teste/refeito-simply-light/releases/tag/v0.1.0-alpha.16) · [Lighting in use / Luzes em uso](docs/SHOWCASE.md)
+
+![Warm and cyan workshop with Complementary](docs/images/pack-studio-shaders-rgb-on.png)
+
+*Actual Alpha16 with Complementary shaders. RGB also works without shaders; see the comparison below.*
 
 ## English
 
@@ -13,8 +17,6 @@ Simple LED Lighting — independent architectural lights for NeoForge.
 Give your crafting corner a warm desk lamp. Run slim light strips along a corridor. Use redstone lamps as status indicators. Build a clean wall of color with frameless lights.
 
 The workshop below uses our bulbs, wall fixtures, ceiling rods and floor strips together. These are actual in-game captures of Alpha16, not concept art.
-
-![A furnished workshop with warm and cyan light — Complementary shaders](https://raw.githubusercontent.com/Tech-teste/refeito-simply-light/main/docs/images/pack-studio-shaders-rgb-on.png)
 
 *Workshop shown with Sodium, Iris and ComplementaryUnbound r5.9.3. Shaders are optional.*
 
