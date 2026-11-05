@@ -1,0 +1,25 @@
+modLoader="javafml"
+loaderVersion="[11,)"
+license="All Rights Reserved"
+[[mods]]
+modId="lumaworks"
+version="0.1.0-alpha.16"
+displayName="Refeito: Simply Light | Iluminação LED Simples"
+logoFile="logo.png"
+authors="ChatGPTinho"
+description="Independent, unofficial architectural lighting inspired by Simply Light. Original implementation and assets. Not affiliated with Flanks255 or FTB. Experimental build for Minecraft 26.1.2."
+[[dependencies.lumaworks]]
+modId="minecraft"
+type="required"
+versionRange="[26.1.2]"
+ordering="NONE"
+side="BOTH"
+[[dependencies.lumaworks]]
+modId="neoforge"
+type="required"
+versionRange="[26.1.2.126,26.1.3)"
+ordering="NONE"
+side="BOTH"
+
+[[mixins]]
+config="lumaworks-rgb.mixins.json"
