@@ -1,0 +1,10 @@
+.gradle/
+build/
+run/
+.idea/
+__pycache__/
+*.log
+*.jfr
+.env*
+Thumbs.db
+.DS_Store

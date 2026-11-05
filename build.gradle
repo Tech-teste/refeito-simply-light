@@ -1,0 +1,51 @@
+plugins { id 'java-library'; id 'net.neoforged.moddev' version '2.0.148' }
+version = '0.1.0-alpha.16+26.1.2'
+group = 'br.lumaworks'
+base { archivesName = 'luma-works' }
+java { toolchain.languageVersion = JavaLanguageVersion.of(25); withSourcesJar() }
+neoForge {
+ version = '26.1.2.126'
+ runs { client { client() }; server { server(); programArgument '--nogui' } }
+ mods { lumaworks { sourceSet(sourceSets.main) } }
+}
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+tasks.named('jar') { from('LICENSE.txt'); from('third-party') { into 'META-INF/licenses' } }
+sourceSets.main.java.srcDir 'src/client/java'
+// Build-only API; never bundled or required at runtime. Pinned official Sodium release.
+repositories { maven { url = 'https://api.modrinth.com/maven' } }
+configurations { sodiumDistribution }
+dependencies { sodiumDistribution 'maven.modrinth:sodium:zg4YQ9EL' }
+def sodiumApi = layout.buildDirectory.file('sodium-api/sodium-api.jar')
+def extractSodiumApi = tasks.register('extractSodiumApi', Sync) {
+    from({ zipTree(configurations.sodiumDistribution.singleFile) })
+    include 'META-INF/jarjar/*-mod.jar'
+    eachFile { path = 'sodium-api.jar' }
+    includeEmptyDirs = false
+    into layout.buildDirectory.dir('sodium-api')
+}
+dependencies { compileOnly files(sodiumApi).builtBy(extractSodiumApi) }
+
+if (project.hasProperty('smokeTest')) {
+    sourceSets.main.java.srcDir 'src/smoke/java'
+    neoForge.runs.server.systemProperty 'lumaworks.smoke', 'true'
+}
+repositories { maven { url = 'https://maven.blamejared.com' } }
+dependencies { compileOnly 'mezz.jei:jei-26.1.2-common-api:29.47.0.111' }
+
+def generatedResources = layout.buildDirectory.dir('generated/lumaworks-resources')
+def generateLightingResources = tasks.register('generateLightingResources', Exec) {
+    inputs.files(fileTree('tools') { include '*.py', '*.json' })
+    outputs.dir generatedResources
+    commandLine(System.getProperty('os.name').toLowerCase().contains('windows') ? 'python' : 'python3',
+        'tools/build_resources.py', generatedResources.get().asFile.absolutePath)
+}
+tasks.named('processResources') {
+    dependsOn generateLightingResources
+    from generatedResources
+}
+tasks.register('verifyLightingResources', Exec) {
+    dependsOn generateLightingResources
+    commandLine(System.getProperty('os.name').toLowerCase().contains('windows') ? 'python' : 'python3',
+        'tools/verify_resources.py', generatedResources.get().asFile.absolutePath)
+}
+tasks.named('check') { dependsOn 'verifyLightingResources' }

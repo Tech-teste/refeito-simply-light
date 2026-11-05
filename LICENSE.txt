@@ -1,0 +1,7 @@
+Luma Works original project files: All Rights Reserved, 2026.
+Source code is published for reference. No additional reuse license is granted.
+
+The Gradle Wrapper is third-party tooling, licensed under the Apache License 2.0.
+See https://www.apache.org/licenses/LICENSE-2.0
+Minecraft and NeoForge are external development/runtime dependencies and are not
+included in the source distribution. Their respective licenses apply.
