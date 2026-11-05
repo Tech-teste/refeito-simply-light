@@ -28,7 +28,7 @@ Minecraft **26.1.2**, NeoForge **26.1.2.126 or compatible 26.1.2 build**, Java *
 
 ### Color and experimental RGB
 
-Colored lamp textures work normally. Vanilla Minecraft still supplies ordinary white block light by default. To opt into our experimental surface-color layer, set `nativeRgbEnabled = true` in `config/lumaworks-client.toml`; the default is **false**. It is client-side and does not add a block entity or tick task per light.
+Colored lamp textures work normally. Vanilla Minecraft still supplies ordinary white block light by default. To opt into our experimental surface-color layer, set `nativeRgbEnabled = true` in `config/lumaworks-client.toml` and restart the client; the default is **false**. It is client-side and does not add a block entity or tick task per light.
 
 The optional layer has been tested with the standard renderer and with Sodium 0.9.2 / Iris 1.11.4 + original ComplementaryUnbound r5.9.3. Results vary between shader packs. Nearby block surfaces are supported; entities, fluids, partial occlusion and rapid continuous changes need more work. This is an alpha, not a zero-lag claim. See [validation](docs/VALIDATION.md).
 
@@ -66,7 +66,7 @@ Minecraft **26.1.2**, NeoForge **26.1.2.126** e Java **25**. Instale um único j
 - As peças pequenas admitem outras orientações e água. O poste desmonta sem deixar partes órfãs e entrega um item.
 - Luminárias podem ser usadas na cabeça; postes mantêm a função de arma.
 
-As texturas coloridas funcionam normalmente. A luz do Minecraft continua branca por padrão. Para experimentar a cor nas superfícies, ative `nativeRgbEnabled = true` em `config/lumaworks-client.toml`. A opção começa desligada, é do cliente e não cria uma tarefa por lâmpada. Testada com renderizador padrão e Sodium/Iris + Complementary; entidades, fluidos, oclusão parcial e mudanças rápidas ainda têm limites. Não há promessa de zero lag.
+As texturas coloridas funcionam normalmente. A luz do Minecraft continua branca por padrão. Para experimentar a cor nas superfícies, ative `nativeRgbEnabled = true` em `config/lumaworks-client.toml` e reinicie o cliente. A opção começa desligada, é do cliente e não cria uma tarefa por lâmpada. Testada com renderizador padrão e Sodium/Iris + Complementary; entidades, fluidos, oclusão parcial e mudanças rápidas ainda têm limites. Não há promessa de zero lag.
 
 Os crafts usam materiais vanilla. Recoloração: oito luminárias e um corante; laje vira dois painéis; normal/invertida e fita superior/inferior trocam um por um. Veja [receitas](docs/RECIPES.md), [catálogo](docs/CATALOGUE.md), [comparação](docs/COMPARISON.md) e [testes](docs/VALIDATION.md).
 
