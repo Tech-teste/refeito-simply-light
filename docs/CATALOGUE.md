@@ -49,3 +49,8 @@ All ten base families have sixteen colors. / Todas as dez famílias têm dezesse
 64 additional items: normal/inverted full blocks, slabs and panels in all sixteen colors. The wrench converts the placed block or works as a reusable recipe ingredient. / 64 itens adicionais sem moldura; a chave converte no mundo ou na bancada.
 
 ![Finishes](images/04-framed-and-frameless.png)
+
+
+## Builds and RGB / Construções e RGB
+
+[See furnished rooms, RGB comparisons and redstone animations / Veja ambientes, comparações RGB e animações de redstone](SHOWCASE.md).
