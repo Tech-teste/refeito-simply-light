@@ -8,6 +8,48 @@ Simple LED Lighting — independent architectural lights for NeoForge.
 
 ## English
 
+### Lighting for places you actually build
+
+Give your crafting corner a warm desk lamp. Run slim light strips along a corridor. Use redstone lamps as status indicators. Build a clean wall of color with frameless lights.
+
+The workshop below uses our bulbs, wall fixtures, ceiling rods and floor strips together. These are actual in-game captures of Alpha16, not concept art.
+
+![A furnished workshop with warm and cyan light — Complementary shaders](https://raw.githubusercontent.com/Tech-teste/refeito-simply-light/main/docs/images/pack-studio-shaders-rgb-on.png)
+
+*Workshop shown with Sodium, Iris and ComplementaryUnbound r5.9.3. Shaders are optional.*
+
+### RGB without a shader pack
+
+The same room, the same camera: watch the walls and floor change when environmental RGB is enabled. This capture runs with **only Minecraft, NeoForge and this mod**. You do not need another lighting addon.
+
+![Actual RGB OFF / ON comparison without shaders](https://raw.githubusercontent.com/Tech-teste/refeito-simply-light/main/docs/images/rgb-no-shaders-en.gif)
+
+The lamps illuminate in both states. RGB adds color to nearby block surfaces; it is an optional client setting, **off by default in this Alpha**. Set `nativeRgbEnabled = true` in `config/lumaworks-client.toml`, then restart the client.
+
+### RGB with shaders
+
+Prefer a shader look? Here is the same workshop in the FTB Evolution 2 test copy with Sodium 0.9.2, Iris 1.11.4 and original ComplementaryUnbound r5.9.3. The comparison switches our RGB layer off and on while keeping the shader active.
+
+![Complementary stays active while our surface RGB switches OFF / ON](https://raw.githubusercontent.com/Tech-teste/refeito-simply-light/main/docs/images/rgb-with-shaders-en.gif)
+
+Compatibility was checked with this combination; every shader handles colors differently. Entities, fluids, partial occlusion and fast continuous changes still have limits.
+
+### Useful details, up close
+
+![A small warm bulb on a crafting desk, wall fixture and recessed floor strip](https://raw.githubusercontent.com/Tech-teste/refeito-simply-light/main/docs/images/pack-desk-warm-shaders.png)
+
+![A cyan bulb lights a workbench alongside a slim floor strip](https://raw.githubusercontent.com/Tech-teste/refeito-simply-light/main/docs/images/pack-desk-cool-shaders.png)
+
+The small lights shown here are always on in Alpha16. Redstone control is currently available on the full-block lamps; normal lamps turn on with a signal and inverted lamps turn off.
+
+![Three full-block redstone indicators switching in an actual workshop](https://raw.githubusercontent.com/Tech-teste/refeito-simply-light/main/docs/images/redstone-in-use-en.gif)
+
+### Tested in game
+
+All **224 blocks and 520 recipes** were checked, alongside English/Portuguese, water, directions, redstone and the reusable tool in the vanilla Crafter. Dedicated checks passed **34,633 assertions**. The previous full-pack run lasted **10 minutes 42 seconds**, including 256/4,096-light scenes and Complementary, near the normal **20 TPS** server target.
+
+We also measured this furnished workshop with RGB off/on, with and without Complementary. There is no ticking block entity or task per lamp. **Client frame-time spikes remain, including in RGB-off controls.** The version is Alpha, not a promise of zero lag. [Read the measurements and limits](https://github.com/Tech-teste/refeito-simply-light/blob/main/docs/SHOWCASE.md#measurements).
+
 Build with full blocks, slabs, quarter-block panels, compact fixtures, bulbs, floor and ceiling strips, three-block lamp posts and rod lights. All ten families have 16 colors. Full blocks, slabs and panels also have frameless items: **224 light blocks, one Finishing Wrench and 520 recipes**.
 
 This is an independent, unofficial recreation inspired by [Simply Light by Flanks255](https://www.curseforge.com/minecraft/mc-mods/simply-light). Code, models, textures and artwork are our own. It is not an official update and is not affiliated with Flanks255, FTB or Mojang.
@@ -51,6 +93,40 @@ Project credit: **ChatGPTinho**, a user-chosen nickname. Developed with assistan
 ---
 
 ## Português brasileiro
+
+### Luzes para as construções do dia a dia
+
+Uma luminária quente na bancada. Fitas discretas guiando o corredor. Blocos de redstone indicando o estado das máquinas. Paredes coloridas contínuas com as versões sem moldura.
+
+A oficina usa bulbos, arandelas, barras de teto e fitas de piso juntos. As imagens são capturas reais da Alpha16 no Minecraft; a versão com shaders usa ComplementaryUnbound r5.9.3.
+
+### RGB sem shaders
+
+O mesmo ambiente e a mesma câmera: veja as paredes e o chão receberem cor ao ligar o RGB. Esta captura usa **somente Minecraft, NeoForge e este mod**, sem addon de iluminação.
+
+![RGB desligado e ligado sem shaders, no jogo real](https://raw.githubusercontent.com/Tech-teste/refeito-simply-light/main/docs/images/rgb-no-shaders-pt.gif)
+
+As luminárias iluminam nos dois estados. O RGB acrescenta cor às superfícies próximas. Nesta Alpha ele começa **desligado**: ative `nativeRgbEnabled = true` em `config/lumaworks-client.toml` e reinicie o cliente.
+
+### RGB com shaders
+
+Aqui o Complementary continua ativo enquanto ligamos e desligamos nossa camada de cor, na cópia de teste do FTB Evolution 2 com Sodium/Iris.
+
+![Complementary ativo, RGB ambiental desligado e ligado](https://raw.githubusercontent.com/Tech-teste/refeito-simply-light/main/docs/images/rgb-with-shaders-pt.gif)
+
+Cada shader pode tratar as cores de um jeito. Entidades, fluidos, oclusão parcial e mudanças rápidas ainda têm limitações.
+
+### Sinalização para sua oficina
+
+![Indicadores de redstone funcionando na oficina](https://raw.githubusercontent.com/Tech-teste/refeito-simply-light/main/docs/images/redstone-in-use-pt.gif)
+
+Na Alpha16, os blocos inteiros aceitam redstone normal/invertida. As luminárias pequenas mostradas ficam sempre acesas; versões pequenas controláveis ainda não fazem parte desta versão.
+
+### Desempenho conferido
+
+Foram conferidos os **224 blocos, 520 receitas, os dois idiomas e 34.633 verificações do servidor**, incluindo redstone e a chave no Crafter. O teste anterior no pack durou **10min42s**, com cenas de até 4.096 luzes, mantendo TPS próximos de 20.
+
+Também medimos esta oficina com RGB ligado/desligado, com e sem Complementary. Não há entidade de bloco ou tarefa rodando por lâmpada. **Ainda apareceram engasgos gráficos, inclusive com RGB desligado.** A Alpha não promete zero lag. [Veja as medições e os limites](https://github.com/Tech-teste/refeito-simply-light/blob/main/docs/SHOWCASE.md#measurements).
 
 Luminárias arquitetônicas em dez famílias e 16 cores: blocos, lajes, painéis de um quarto de bloco, arandelas, bulbos, fitas inferiores/superiores, postes de três blocos e barras. Com variantes sem moldura para blocos, lajes e painéis: **224 blocos, uma Chave de Acabamento e 520 receitas**.
 
