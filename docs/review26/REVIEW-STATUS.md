@@ -1,3 +1,5 @@
+> Later correction: actual Alpha26 lamp-item names were NOT approved by a sufficient check. A stronger comparison found item.lumaworks.white_signal. Alpha27 fixes the block description prefix and passes actual432item names in EN/PT. See [countercheck](../review27/name-countercheck26.json) and [current review](../review27/STATUS.md). The older locale-entry and tooltip checks remain separately scoped evidence.
+
 # Alpha26 review status / Situação da revisão
 
 The whole review remains open. Results below have limited scopes. / A revisão geral continua aberta; cada resultado tem escopo limitado.
