@@ -1,0 +1,11 @@
+{
+  "candidate": "Alpha26",
+  "status": "FAIL",
+  "check": "actual ItemStack hover name must equal translated block name",
+  "item": "lumaworks:white_signal",
+  "actual": "item.lumaworks.white_signal",
+  "cause": "custom LightingItem used item description prefix, while locale entries use block prefix",
+  "old_test_limit": "rejected only block.lumaworks untranslated keys, so item.lumaworks keys escaped detection",
+  "fixed_in": "Alpha27",
+  "new_validation": "432actual lamp names matched translated block names in EN/PT; see client-en_us.json and client-pt_br.json"
+}
