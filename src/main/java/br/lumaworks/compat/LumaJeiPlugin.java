@@ -17,12 +17,17 @@ public final class LumaJeiPlugin implements IModPlugin {
         for (LightForm form : LightForm.values()) {
             String name = form.name().toLowerCase(Locale.ROOT);
             var stacks = LumaWorks.LIGHTS.entrySet().stream()
-                .filter(e -> e.getKey().endsWith("_" + name) || e.getKey().endsWith("_" + name + "_seamless"))
+                .filter(e -> e.getKey().endsWith("_" + name) || e.getKey().endsWith("_" + name + "_seamless")
+                    || e.getKey().endsWith("_" + name + "_redstone") || e.getKey().endsWith("_" + name + "_redstone_inverted"))
                 .map(e -> e.getValue().get().asItem().getDefaultInstance()).toList();
             if (form == LightForm.SIGNAL || form == LightForm.INVERSE || form == LightForm.SLAB || form == LightForm.PANEL)
                 recipes.addItemStackInfo(stacks, Component.translatable("tooltip.lumaworks." + name), Component.translatable("tooltip.lumaworks.finish"), Component.translatable("tooltip.lumaworks.wear"));
             else recipes.addItemStackInfo(stacks, Component.translatable("tooltip.lumaworks." + name), Component.translatable("tooltip.lumaworks.wear"));
         }
+        var walls = LumaWorks.LIGHTS.entrySet().stream().filter(e -> e.getKey().contains("_strip_wall"))
+            .map(e -> e.getValue().get().asItem().getDefaultInstance()).toList();
+        recipes.addItemStackInfo(walls, Component.translatable("tooltip.lumaworks.strip_wall"),
+            Component.translatable("tooltip.lumaworks.redstone.normal"), Component.translatable("tooltip.lumaworks.redstone.inverted"));
         recipes.addItemStackInfo(LumaWorks.FINISHING_KEY.get().getDefaultInstance(),
             Component.translatable("tooltip.lumaworks.finishing_key.world"),
             Component.translatable("tooltip.lumaworks.finishing_key.craft"),
