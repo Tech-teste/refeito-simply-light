@@ -1,0 +1,31 @@
+{
+  "status": "PASS_WITH_SCOPE",
+  "candidate": "Alpha28",
+  "actual_client_command_open": true,
+  "native_book": true,
+  "languages": [
+    "en_us",
+    "pt_br"
+  ],
+  "pages_checked": 14,
+  "max_lines": 12,
+  "line_height": 9,
+  "text_height": 128,
+  "scale": 3,
+  "render_size": [
+    1280,
+    720
+  ],
+  "all_page_navigation_succeeded": true,
+  "captures": 14,
+  "visual_spot_review": [
+    "guide-en_us-4.png",
+    "guide-pt_br-6.png"
+  ],
+  "restoration": {
+    "options_restored_except_master_muted": true,
+    "config_byte_identical": true,
+    "auxiliary_process_closed": true
+  },
+  "limits": "All pages measured with actual game font and navigated. Representative screenshots visually inspected; other resolutions/accessibility settings not exhaustive."
+}

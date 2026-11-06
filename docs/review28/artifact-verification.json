@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "jar_sha256": "190d26625cbbdfdc0f6f47c8cdc26ee93fcca657599182be94e765e2c9995556",
+  "clean_build_identical": true,
+  "changed_entries_from27": [
+    "META-INF/neoforge.mods.toml",
+    "br/lumaworks/client/EdgeEditorScreen.class"
+  ],
+  "test_helpers_excluded": true,
+  "rgb_runtime_unchanged": true,
+  "block_resources_ids_recipes_unchanged": true
+}
