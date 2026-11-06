@@ -306,6 +306,8 @@ def generate():
     naming_resources(ROOT)
     from item_preview_resources import generate as item_previews
     item_previews(ROOT)
+    from item_context_resources import generate as item_contexts
+    item_contexts(ROOT)
     recipe_book(ROOT)
     print('Generated 432 independent lights, finishing tool and editor translations.')
 
