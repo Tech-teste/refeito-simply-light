@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "candidate": "Alpha27",
+  "sha256": "18adcec123d3d067f6129a1abdb0720acae2337cbed2ecb69f9a0c3ddb5bdba5",
+  "clean_source_build_byte_identical": true,
+  "added_item_presentation_models": 176,
+  "changed_item_definitions": 368,
+  "changed_other_files": [
+    "META-INF/neoforge.mods.toml",
+    "br/lumaworks/LightingItem.class"
+  ],
+  "world_models_states_recipes_tags_loot_rgb_byte_identical_to26": true,
+  "new_performance_claim": false,
+  "helpers_bundled": false
+}

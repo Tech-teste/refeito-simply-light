@@ -1,0 +1,103 @@
+{
+  "status": "PASS_MECHANICS_PERFORMANCE_SPIKES_REMAIN",
+  "candidate": "Alpha27",
+  "date": "2026-11-06",
+  "environment": "FTB Evolution2 isolated auxiliary, Minecraft26.1.2 / NeoForge26.1.2.126 / Java25, i5-14600K, RTX5060, shared PC",
+  "renderer_files": [
+    "iris-neoforge-1.11.4+mc26.1.2.jar",
+    "sodium-neoforge-0.9.2+mc26.1.2.jar"
+  ],
+  "shader": "ComplementaryUnbound_r5.9.3.zip",
+  "dimensions": [
+    1280,
+    720
+  ],
+  "offscreen": true,
+  "visible_display_fps_measured": false,
+  "groups": {
+    "off": {
+      "windows": 8,
+      "measurement_seconds": 240.0230657,
+      "p99_render_callback_interval_range_ms": [
+        2.3138,
+        5.2077
+      ],
+      "max_render_interval_ms": 286.2039,
+      "max_tick_ms": 298.0643,
+      "render_intervals_over50ms": 25,
+      "ticks_over50ms": 2,
+      "tps_range": [
+        19.99652353772789,
+        19.998835867764136
+      ],
+      "end_heap_mib_range": [
+        2866.272575378418,
+        5084.865699768066
+      ],
+      "gc_deltas": {
+        "G1 Young Generation": {
+          "collections": 55,
+          "reported_collection_ms": 839
+        },
+        "G1 Concurrent GC": {
+          "collections": 38,
+          "reported_collection_ms": 419
+        },
+        "G1 Old Generation": {
+          "collections": 0,
+          "reported_collection_ms": 0
+        }
+      },
+      "clock_checks": 12000,
+      "clock_transitions": 600,
+      "all_settled_queues_zero": true
+    },
+    "original": {
+      "windows": 8,
+      "measurement_seconds": 240.0241059,
+      "p99_render_callback_interval_range_ms": [
+        4.3455,
+        6.4245
+      ],
+      "max_render_interval_ms": 55.0593,
+      "max_tick_ms": 137.9673,
+      "render_intervals_over50ms": 6,
+      "ticks_over50ms": 5,
+      "tps_range": [
+        19.996978123322595,
+        19.99885399900301
+      ],
+      "end_heap_mib_range": [
+        3063.2929306030273,
+        5348.650924682617
+      ],
+      "gc_deltas": {
+        "G1 Young Generation": {
+          "collections": 34,
+          "reported_collection_ms": 407
+        },
+        "G1 Concurrent GC": {
+          "collections": 22,
+          "reported_collection_ms": 390
+        },
+        "G1 Old Generation": {
+          "collections": 0,
+          "reported_collection_ms": 0
+        }
+      },
+      "clock_checks": 12000,
+      "clock_transitions": 600,
+      "all_settled_queues_zero": true
+    }
+  },
+  "error_empty_and_no_shader_fallback": true,
+  "limits": [
+    "Shared PC, background activity not controlled.",
+    "One startup-warmed Sodium RGB-off workshop window had286.2039ms maximum interval; retained, not silently excluded.",
+    "One Sodium RGB-on fast-clock tick reached298.0643ms. Causal profiling remains open.",
+    "Shader tick spikes appeared in both RGB-on and RGB-off windows. No zero-lag or no-impact claim.",
+    "Heap snapshots and GC MXBean counters do not establish retained heap or absence of slow leaks.",
+    "Offscreen callback rates are not visible monitor FPS.",
+    "No compilations or browser uploads during measured windows."
+  ]
+}

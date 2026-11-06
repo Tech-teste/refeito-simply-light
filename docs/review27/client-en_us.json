@@ -1,0 +1,15 @@
+{
+  "desktop_input_used": false,
+  "language": "en_us",
+  "mods": [
+    "lumaworks",
+    "minecraft",
+    "neoforge"
+  ],
+  "version": "0.1.0-alpha.27",
+  "tool_name": "Finishing Wrench",
+  "lights": 432,
+  "translated_entries": 498,
+  "status": "PASS",
+  "checks": 1368
+}

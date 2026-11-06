@@ -1,0 +1,63 @@
+{
+  "status": "PASS_WITH_LIMITS",
+  "version": "Alpha27",
+  "environment": "Standalone vanilla renderer, Minecraft26.1.2/NeoForge26.1.2.126/Java25, i5-14600K, RTX5060, shared user PC",
+  "offscreen": true,
+  "dimensions": [
+    1280,
+    720
+  ],
+  "window_count": 16,
+  "measurement_seconds": 480.033143,
+  "warmup_seconds": 60,
+  "tps_window_range": [
+    19.997737522635813,
+    19.999009849022375
+  ],
+  "tick_max_ms": 78.5133,
+  "ticks_over_50ms": 1,
+  "render_callback_interval_p99_range_ms": [
+    0.9012,
+    0.9844
+  ],
+  "render_callback_interval_max_ms": 47.6146,
+  "render_intervals_over_50ms": 0,
+  "visible_monitor_fps_measured": false,
+  "heap_end_snapshot_range_mib": [
+    438.08358001708984,
+    939.5339431762695
+  ],
+  "heap_committed_snapshot_mib": [
+    1024.0,
+    1052.0
+  ],
+  "gc_deltas": {
+    "G1 Young Generation": {
+      "collections_delta": 180,
+      "collection_time_delta_ms": 322
+    },
+    "G1 Concurrent GC": {
+      "collections_delta": 140,
+      "collection_time_delta_ms": 234
+    },
+    "G1 Old Generation": {
+      "collections_delta": 0,
+      "collection_time_delta_ms": 0
+    }
+  },
+  "clock_checks": 24000,
+  "clock_transitions": 660,
+  "rapid_rgb_pause_count": 1,
+  "all_settled_pending_sections_zero": true,
+  "all_settled_rgb_error_empty": true,
+  "leak_absence_proven": false,
+  "concurrent_builds_during_measurement": false,
+  "limitations": [
+    "Shared PC and background user activity not controlled.",
+    "Offscreen callback intervals are not visible display FPS.",
+    "One isolated78.5133ms tick observed; no causal attribution.",
+    "Heap snapshots do not establish retained heap or prove absence of slow leaks.",
+    "GC bean collection time is not a measured STW pause histogram; concurrent GC durations may overlap.",
+    "Current run is standalone without Sodium/Iris/shaders. Their previous pack results remain Alpha26 evidence."
+  ]
+}
