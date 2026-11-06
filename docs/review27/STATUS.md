@@ -23,3 +23,6 @@ All auxiliary client processes used in these checks closed normally. Options res
 
 ## Current pack observation
 FTB Evolution2 with Sodium and Iris/Complementary:16x30s measured,24,000emission checks passed and settling queues0/error empty/no shader fallback. Performance remains PARTIAL: observed286ms render interval (RGB off),298ms tick (RGB on), and shader tick spikes in both states. Causal profiling remains open. See pack-longrun/PERFORMANCE.md and summary.json. Auxiliary closed and options/RGB/Iris files restored.
+
+## Captured-spike diagnostic follow-up
+Eight JFR-instrumented fast-clock windows (240s) passed48,000emission checks/2,400transitions, with queues0after settling. A379ms tick sampled world-save paths in15of16server samples; large frames sampled backgroundSCC/JEIrecipe work. See [scoped diagnosis](DIAGNOSIS.md) and [reference comparison](COMPARISON.md). Profiling does not prove zero cost or eliminate every spike; autosave and pack settings were preserved. Spark screenshot is recent-window data after the run.
