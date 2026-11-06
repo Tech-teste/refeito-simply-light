@@ -42,6 +42,15 @@ public final class EdgeEditorMenu extends AbstractContainerMenu {
         return mask == 0 ? 15 : mask; // Preserve the existing full-outline representation.
     }
     public int mask() { return edges.get(); }
+    public BlockPos position() { return position; }
+    public boolean isWallStrip() { return expectedBlock instanceof ArchitecturalLight light && light.isWallStrip(); }
+    public Direction sideDirection(int index) {
+        if (!isWallStrip()) return new Direction[]{Direction.NORTH,Direction.EAST,Direction.SOUTH,Direction.WEST}[index];
+        var state = level.getBlockState(position);
+        Direction face = state.hasProperty(ArchitecturalLight.WALL_FACING) ? state.getValue(ArchitecturalLight.WALL_FACING) : Direction.NORTH;
+        return switch (index) { case 0 -> Direction.UP; case 1 -> face.getCounterClockWise(); case 2 -> Direction.DOWN; case 3 -> face.getClockWise(); default -> throw new IllegalArgumentException(); };
+    }
+    public String sideLabel(int index) { return isWallStrip() ? new String[]{"top","right","bottom","left"}[index] : sideDirection(index).getName(); }
     @Override public boolean stillValid(Player player) {
         return owner.equals(player.getUUID()) && player.level() == level && player.mayBuild() && !player.isSpectator()
             && player.distanceToSqr(Vec3.atCenterOf(position)) <= 64
@@ -52,7 +61,7 @@ public final class EdgeEditorMenu extends AbstractContainerMenu {
     @Override public boolean clickMenuButton(Player player, int button) {
         if (level.isClientSide() || button < 0 || button > 4 || !stillValid(player)) return false;
         var permission = new PlayerInteractEvent.RightClickBlock(player, InteractionHand.MAIN_HAND, position,
-            new BlockHitResult(Vec3.atCenterOf(position), Direction.UP, position, false));
+            new BlockHitResult(Vec3.atCenterOf(position), isWallStrip() ? level.getBlockState(position).getValue(ArchitecturalLight.WALL_FACING) : Direction.UP, position, false));
         NeoForge.EVENT_BUS.post(permission);
         if (permission.isCanceled() || permission.getUseBlock() == TriState.FALSE || !stillValid(player)) return false;
         int mask = button == 4 ? 15 : readMask() ^ (1 << button);

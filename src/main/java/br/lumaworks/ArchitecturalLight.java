@@ -20,9 +20,13 @@ public final class ArchitecturalLight extends Block implements SimpleWaterlogged
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
     public static final BooleanProperty WATER = BlockStateProperties.WATERLOGGED;
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
+    public static final EnumProperty<Direction> WALL_FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final IntegerProperty EDGES = IntegerProperty.create("edges", 0, 15);
     public static final BooleanProperty FRAMED = BooleanProperty.create("framed");
     private final LightForm form;
+    private final int redstoneMode;
+    private final boolean wallStrip;
+    private final VoxelShape[][] wallShapes;
     private final VoxelShape[] shapes = new VoxelShape[6];
     private final VoxelShape[] strips = new VoxelShape[16];
 
@@ -31,11 +35,23 @@ public final class ArchitecturalLight extends Block implements SimpleWaterlogged
     }
 
     public ArchitecturalLight(Properties properties, LightForm form, boolean framed) {
+        this(properties, form, framed, 0);
+    }
+
+    public ArchitecturalLight(Properties properties, LightForm form, boolean framed, int redstoneMode) {
+        this(properties, form, framed, redstoneMode, false);
+    }
+
+    public ArchitecturalLight(Properties properties, LightForm form, boolean framed, int redstoneMode, boolean wallStrip) {
         this.form = form;
+        this.redstoneMode = redstoneMode;
+        this.wallStrip = wallStrip;
         super(properties);
+        wallShapes = wallStrip ? new VoxelShape[4][16] : null;
         BlockState initial = stateDefinition.any().setValue(WATER, false);
-        if (signal()) initial = initial.setValue(LIT, form == LightForm.INVERSE);
+        if (controlled()) initial = initial.setValue(LIT, inverted());
         if (strip()) initial = initial.setValue(EDGES, 15);
+        if (wallStrip) initial = initial.setValue(WALL_FACING, Direction.NORTH);
         if (!signal() && !strip()) initial = initial.setValue(FACING, Direction.UP);
         if (supportsFrame()) initial = initial.setValue(FRAMED, framed);
         registerDefaultState(initial);
@@ -50,7 +66,20 @@ public final class ArchitecturalLight extends Block implements SimpleWaterlogged
             shapes[Direction.WEST.ordinal()] = box(16-depth, lo, lo, 16, hi, hi);
             shapes[Direction.EAST.ordinal()] = box(0, lo, lo, depth, hi, hi);
         }
-        if (strip()) {
+        if (wallStrip) {
+            // Local order seen from the front: top, right, bottom, left.
+            double[][] boxes = {{1.4,14.6,14.4375,14.6,16,16}, {0,0,14.4375,1.4,16,16},
+                {1.4,0,14.4375,14.6,1.4,16}, {14.6,0,14.4375,16,16,16}};
+            for (int rotation = 0; rotation < 4; rotation++) for (int mask = 0; mask < 16; mask++) {
+                VoxelShape shape = Shapes.empty();
+                for (int bit = 0; bit < 4; bit++) if (((mask == 0 ? 15 : mask) & (1 << bit)) != 0) {
+                    double[] b = boxes[bit].clone();
+                    for (int turn = 0; turn < rotation; turn++) b = new double[]{16-b[5],b[1],b[0],16-b[2],b[4],b[3]};
+                    shape = Shapes.or(shape,box(b[0],b[1],b[2],b[3],b[4],b[5]));
+                }
+                wallShapes[rotation][mask] = shape.optimize();
+            }
+        } else if (strip()) {
             double y = form == LightForm.STRIP_HIGH ? 15 : 0;
             double height = form == LightForm.STRIP_HIGH ? 1 : 1.05;
             double rail = 1.4;
@@ -66,12 +95,20 @@ public final class ArchitecturalLight extends Block implements SimpleWaterlogged
 
     private boolean strip() { return form == LightForm.STRIP_LOW || form == LightForm.STRIP_HIGH; }
     private boolean signal() { return form == LightForm.SIGNAL || form == LightForm.INVERSE; }
+    private boolean controlled() { return signal() || redstoneMode != 0; }
+    private boolean inverted() { return form == LightForm.INVERSE || redstoneMode == 2; }
+    public int redstoneMode() { return redstoneMode; }
+    public boolean isWallStrip() { return wallStrip; }
+    public static int wallRotation(Direction facing) {
+        return switch (facing) { case NORTH -> 0; case EAST -> 1; case SOUTH -> 2; case WEST -> 3; default -> throw new IllegalArgumentException("Horizontal face required"); };
+    }
     private boolean supportsFrame() { return signal() || form == LightForm.SLAB || form == LightForm.PANEL; }
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(WATER);
-        if (signal()) builder.add(LIT);
-        else if (strip()) builder.add(EDGES);
-        else builder.add(FACING);
+        if (controlled()) builder.add(LIT);
+        if (strip()) builder.add(EDGES);
+        else if (!signal()) builder.add(FACING);
+        if (wallStrip) builder.add(WALL_FACING);
         if (supportsFrame()) builder.add(FRAMED);
     }
     @Override public BlockState getStateForPlacement(BlockPlaceContext ctx) {
@@ -87,20 +124,23 @@ public final class ArchitecturalLight extends Block implements SimpleWaterlogged
             if (previous.getBlock() instanceof ArchitecturalLight light && (light.form == LightForm.SLAB || light.form == LightForm.PANEL)) facing = previous.getValue(FACING);
         }
         BlockState placed = defaultBlockState().setValue(WATER, ctx.getLevel().getFluidState(ctx.getClickedPos()).is(Fluids.WATER));
-        if (signal()) placed = placed.setValue(LIT, ctx.getLevel().hasNeighborSignal(ctx.getClickedPos()) ^ (form == LightForm.INVERSE));
+        if (controlled()) placed = placed.setValue(LIT, ctx.getLevel().hasNeighborSignal(ctx.getClickedPos()) ^ inverted());
+        if (wallStrip) placed = placed.setValue(EDGES, 15).setValue(WALL_FACING,
+            facing.getAxis().isHorizontal() ? facing : ctx.getHorizontalDirection().getOpposite());
         else if (strip()) placed = placed.setValue(EDGES, mask);
-        else placed = placed.setValue(FACING, facing);
+        else if (!signal()) placed = placed.setValue(FACING, facing);
         return placed;
     }
     @Override protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
-        return signal() ? Shapes.block() : strip() ? strips[state.getValue(EDGES)] : shapes[state.getValue(FACING).ordinal()];
+        return signal() ? Shapes.block() : wallStrip ? wallShapes[wallRotation(state.getValue(WALL_FACING))][state.getValue(EDGES)]
+            : strip() ? strips[state.getValue(EDGES)] : shapes[state.getValue(FACING).ordinal()];
     }
     @Override protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
         return strip() || form == LightForm.BULB || form == LightForm.FIXTURE ? Shapes.empty() : getShape(state, level, pos, ctx);
     }
     @Override protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block source, @Nullable Orientation orientation, boolean moved) {
-        if (!level.isClientSide() && signal()) {
-            boolean lit = level.hasNeighborSignal(pos) ^ (form == LightForm.INVERSE);
+        if (!level.isClientSide() && controlled()) {
+            boolean lit = level.hasNeighborSignal(pos) ^ inverted();
             if (lit != state.getValue(LIT)) level.setBlock(pos, state.setValue(LIT, lit), UPDATE_CLIENTS);
         }
     }
@@ -126,6 +166,7 @@ public final class ArchitecturalLight extends Block implements SimpleWaterlogged
     }
     @Override protected BlockState rotate(BlockState state, Rotation rotation) {
         if (signal()) return state;
+        if (wallStrip) return state.setValue(WALL_FACING, rotation.rotate(state.getValue(WALL_FACING)));
         if (!strip()) return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
         int rotated = 0, mask = state.getValue(EDGES);
         Direction[] dirs = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
@@ -134,6 +175,12 @@ public final class ArchitecturalLight extends Block implements SimpleWaterlogged
     }
     @Override protected BlockState mirror(BlockState state, Mirror mirror) {
         if (signal()) return state;
+        if (wallStrip) {
+            if (mirror == Mirror.NONE) return state;
+            int mask = state.getValue(EDGES);
+            return state.setValue(WALL_FACING, mirror.mirror(state.getValue(WALL_FACING)))
+                .setValue(EDGES, (mask & 5) | ((mask & 2) << 2) | ((mask & 8) >> 2));
+        }
         if (!strip()) return state.setValue(FACING, mirror.mirror(state.getValue(FACING)));
         int result = 0, mask = state.getValue(EDGES);
         Direction[] dirs = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};

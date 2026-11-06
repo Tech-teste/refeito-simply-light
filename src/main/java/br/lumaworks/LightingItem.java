@@ -31,7 +31,10 @@ public final class LightingItem extends BlockItem {
     @Override public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display,
             Consumer<Component> tooltip, TooltipFlag flags) {
         super.appendHoverText(stack, context, display, tooltip, flags);
-        tooltip.accept(Component.translatable("tooltip.lumaworks." + form.name().toLowerCase(java.util.Locale.ROOT)).withStyle(ChatFormatting.GRAY));
+        boolean wall = getBlock() instanceof ArchitecturalLight light && light.isWallStrip();
+        tooltip.accept(Component.translatable("tooltip.lumaworks." + (wall ? "strip_wall" : form.name().toLowerCase(java.util.Locale.ROOT))).withStyle(ChatFormatting.GRAY));
+        if (getBlock() instanceof br.lumaworks.ArchitecturalLight light && light.redstoneMode() != 0)
+            tooltip.accept(Component.translatable("tooltip.lumaworks.redstone." + (light.redstoneMode() == 2 ? "inverted" : "normal")).withStyle(ChatFormatting.GRAY));
         tooltip.accept(Component.translatable("tooltip.lumaworks.wear").withStyle(ChatFormatting.GRAY));
         if (form == LightForm.SIGNAL || form == LightForm.INVERSE || form == LightForm.SLAB || form == LightForm.PANEL)
             tooltip.accept(Component.translatable("tooltip.lumaworks.finish").withStyle(ChatFormatting.GRAY));

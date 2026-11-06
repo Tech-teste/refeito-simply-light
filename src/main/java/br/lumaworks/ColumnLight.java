@@ -18,9 +18,12 @@ public final class ColumnLight extends Block implements SimpleWaterloggedBlock {
     public static final IntegerProperty PART = IntegerProperty.create("part", 0, 2);
     public static final BooleanProperty WATER = BlockStateProperties.WATERLOGGED;
     private static final VoxelShape[] SHAPES = {
-        Shapes.or(box(3,0,3,13,3,13), box(6,3,6,10,16,10)),
-        box(6,0,6,10,16,10),
-        Shapes.or(box(6,0,6,10,5,10), box(4,5,4,12,15,12))};
+        Shapes.or(box(3,0,3,13,1,13), box(4,1,4,12,2,12), box(5,2,5,11,3,11),
+                  box(6,3,6,10,5,10), box(6.5,5,6.5,9.5,16,9.5)),
+        box(6.5,0,6.5,9.5,16,9.5),
+        Shapes.or(box(6.5,0,6.5,9.5,5,9.5), box(5,5,5,11,6,11), box(4,6,4,12,7,12),
+                  box(3,7,3,13,15,13), box(2.5,14.75,2.5,13.5,15.25,13.5),
+                  box(3.25,15.25,3.25,12.75,15.75,12.75), box(4,15.75,4,12,16,12))};
 
     public ColumnLight(Properties properties) {
         super(properties.pushReaction(PushReaction.DESTROY));

@@ -36,6 +36,17 @@ public final class LumaWorks {
                             : (form == LightForm.BULB || form == LightForm.STRIP_LOW || form == LightForm.STRIP_HIGH ? 14 : 15)), form));
                 LIGHTS.put(name, block);
                 ITEMS.registerItem(name, p -> new LightingItem(block.get(), p, form));
+                if (form == LightForm.FIXTURE || form == LightForm.BULB || form == LightForm.TUBE || form == LightForm.STRIP_LOW || form == LightForm.STRIP_HIGH) {
+                    for (int mode = 1; mode <= 2; mode++) {
+                        final int powerMode = mode;
+                        String controlled = name + (mode == 1 ? "_redstone" : "_redstone_inverted");
+                        var controlledBlock = BLOCKS.registerBlock(controlled, p -> new ArchitecturalLight(p.noOcclusion().strength(1.2f)
+                            .lightLevel(s -> s.getValue(ArchitecturalLight.LIT)
+                                ? (form == LightForm.BULB || form == LightForm.STRIP_LOW || form == LightForm.STRIP_HIGH ? 14 : 15) : 0), form, true, powerMode));
+                        LIGHTS.put(controlled, controlledBlock);
+                        ITEMS.registerItem(controlled, p -> new LightingItem(controlledBlock.get(), p, form));
+                    }
+                }
                 if (form == LightForm.SIGNAL || form == LightForm.INVERSE || form == LightForm.SLAB || form == LightForm.PANEL) {
                     String seamless = name + "_seamless";
                     var smoothBlock = BLOCKS.registerBlock(seamless, p -> new ArchitecturalLight((form == LightForm.SIGNAL || form == LightForm.INVERSE ? p : p.noOcclusion()).strength(1.2f)
@@ -45,6 +56,15 @@ public final class LumaWorks {
                     ITEMS.registerItem(seamless, p -> new LightingItem(smoothBlock.get(), p, form));
                 }
             }
+        }
+        // Additive family: keep every existing block ID and state definition unchanged.
+        for (DyeColor color : DyeColor.values()) for (int mode = 0; mode <= 2; mode++) {
+            final int powerMode = mode;
+            String name = color.getName() + "_strip_wall" + (mode == 0 ? "" : mode == 1 ? "_redstone" : "_redstone_inverted");
+            var block = BLOCKS.registerBlock(name, p -> new ArchitecturalLight(p.noOcclusion().strength(1.2f)
+                .lightLevel(s -> powerMode == 0 || s.getValue(ArchitecturalLight.LIT) ? 14 : 0), LightForm.STRIP_LOW, true, powerMode, true));
+            LIGHTS.put(name, block);
+            ITEMS.registerItem(name, p -> new LightingItem(block.get(), p, LightForm.STRIP_LOW));
         }
         TABS.register("lighting", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.lumaworks"))
