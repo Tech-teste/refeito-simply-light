@@ -46,7 +46,7 @@ public final class EdgeEditorScreen extends Screen implements MenuAccess<EdgeEdi
         for (int i = 0; i < 4; i++) {
             final int side = i;
             directions[i] = addRenderableWidget(Button.builder(Component.empty(), b -> send(side))
-                .bounds(leftPos + 5, topPos + 3 + i * 16, 90, 16).build());
+                .bounds(leftPos + 5, topPos + 3 + i * 16, 107, 16).build());
             // Keep native input, focus, tooltips and narration; draw our own compact switch below.
             directions[i].setAlpha(0.0f);
         }
