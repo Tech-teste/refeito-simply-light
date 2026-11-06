@@ -31,7 +31,7 @@ Existing lumaworks identifiers are preserved. Worlds from the original simplylig
 
 ## Test evidence and limits
 
-[Current review](docs/review27/STATUS.md) · [Standalone heap/GC run](docs/review27/PERFORMANCE-STANDALONE.md) · [FTB/Sodium/Iris measurements](docs/review27/PERFORMANCE-PACK.md).
+[Captured-spike diagnosis and Spark snapshot](docs/review27/DIAGNOSIS.md) · [160-ID reference comparison](docs/review27/COMPARISON.md) · [Current review](docs/review27/STATUS.md) · [Standalone heap/GC run](docs/review27/PERFORMANCE-STANDALONE.md) · [FTB/Sodium/Iris measurements](docs/review27/PERFORMANCE-PACK.md).
 
 Actual432 lamp-item names passed in both languages. The current pack run recorded8 minutes across 16 windows: workshop RGB off/on, fast redstone and 4,096 lamp scenes with Sodium and Iris/Complementary. Emission checks passed and queues cleared at settling checkpoints.
 
