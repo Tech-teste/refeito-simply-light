@@ -3,7 +3,7 @@ loaderVersion="[11,)"
 license="All Rights Reserved"
 [[mods]]
 modId="lumaworks"
-version="0.1.0-alpha.26"
+version="0.1.0-alpha.27"
 displayName="Simply Light: Reforged RGB"
 logoFile="logo.png"
 authors="ChatGPTinho"
