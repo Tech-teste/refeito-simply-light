@@ -11873,7 +11873,7 @@
     }
   },
   "assets/lumaworks/lang/en_us.json": {
-    "itemGroup.lumaworks": "Refeito: Simply Light",
+    "itemGroup.lumaworks": "Simply Light: Reforged RGB",
     "message.lumaworks.framed": "Graphite frame",
     "message.lumaworks.seamless": "Frameless finish",
     "gui.lumaworks.edge_editor": "Light strip directions",
@@ -12142,10 +12142,23 @@
     "tooltip.lumaworks.wear": "Can also be equipped on your head.",
     "tooltip.lumaworks.post_weapon": "When held: +4 attack damage, -2 attack speed.",
     "lumaworks.configuration.nativeRgbEnabled": "Experimental colored lighting",
-    "lumaworks.configuration.nativeRgbEnabled.tooltip": "Colors nearby block surfaces. Off by default. Tested with vanilla, Sodium and Iris + Complementary. Entities and fluids are not colored."
+    "lumaworks.configuration.nativeRgbEnabled.tooltip": "Colors nearby block surfaces. On by default for new installations; existing preferences stay unchanged. Tested with vanilla, Sodium and Iris + Complementary. Entities and fluids are not colored.",
+    "key.category.lumaworks.lighting": "Simply Light: Reforged RGB",
+    "key.lumaworks.toggle_rgb": "Toggle colored light (RGB)",
+    "message.lumaworks.rgb_on": "Colored light: ON — experimental, this client only.",
+    "message.lumaworks.rgb_off": "Colored light: OFF — ordinary lighting remains active.",
+    "message.lumaworks.rgb_help": "/lumargb on | off | toggle | guide. Optional key: Options > Controls > Key Binds.",
+    "guide.lumaworks.page1": "LIGHTING GUIDE\n\n16 colors. Blocks, slabs, panels, fixtures, bulbs, rods, strips and three-block posts.\n\nRecipes use vanilla materials. No addon needed.",
+    "guide.lumaworks.page2": "COLORED LIGHT\n\nRGB colors nearby surfaces.\n\n/lumargb on\n/lumargb off\n/lumargb toggle\n\nYour choice is saved only for you.",
+    "guide.lumaworks.page3": "RGB & PERFORMANCE\n\nExperimental. Limited range; no entity/fluid color.\n\nRapid clocks may pause RGB. It returns when signals settle. Ordinary lighting still works.",
+    "guide.lumaworks.page4": "REDSTONE\n\nNormal: signal = on.\nInverted: signal = off.\n\nSmall light + redstone makes a controlled light. Craft alone to invert.\n\nTry machine status lights!",
+    "guide.lumaworks.page5": "FINISHING\n\nRight-click a block, slab or panel with the Finishing Wrench to change its frame.\n\nLight + wrench works in a table or Crafter. The tool returns.",
+    "guide.lumaworks.page6": "EDGE STRIPS\n\nSneak + empty-hand right-click to edit. Floor/ceiling: compass sides. Walls: top/right/bottom/left.\n\nKeep at least one edge. No automatic reselection.",
+    "guide.lumaworks.page7": "BUILDING TIPS\n\nBulbs on fences; strips on paths; fixtures on walls or ceilings. Small lights accept water.\n\nRecolor with dye. Set an RGB shortcut in Controls.",
+    "message.lumaworks.rgb_paused": "RGB temporarily paused by rapid changes; resumes when the signal settles. Ordinary light remains active."
   },
   "assets/lumaworks/lang/pt_br.json": {
-    "itemGroup.lumaworks": "Refeito: Simply Light",
+    "itemGroup.lumaworks": "Simply Light: Reforged RGB",
     "message.lumaworks.framed": "Moldura grafite",
     "message.lumaworks.seamless": "Acabamento sem moldura",
     "gui.lumaworks.edge_editor": "Direções da fita luminosa",
@@ -12414,7 +12427,20 @@
     "tooltip.lumaworks.wear": "Também pode ser equipada na cabeça.",
     "tooltip.lumaworks.post_weapon": "Na mão: +4 de dano de ataque, -2 de velocidade de ataque.",
     "lumaworks.configuration.nativeRgbEnabled": "Iluminação colorida experimental",
-    "lumaworks.configuration.nativeRgbEnabled.tooltip": "Colore superfícies de blocos próximos. Desligada por padrão. Testada com vanilla, Sodium e Iris + Complementary. Entidades e fluidos não recebem a cor."
+    "lumaworks.configuration.nativeRgbEnabled.tooltip": "Colore superfícies de blocos próximos. Ligada por padrão em instalações novas; preferências existentes são mantidas. Testada com vanilla, Sodium e Iris + Complementary. Entidades e fluidos não recebem a cor.",
+    "key.category.lumaworks.lighting": "Simply Light: Reforged RGB",
+    "key.lumaworks.toggle_rgb": "Alternar luz colorida (RGB)",
+    "message.lumaworks.rgb_on": "Luz colorida: LIGADA — experimental, só neste cliente.",
+    "message.lumaworks.rgb_off": "Luz colorida: DESLIGADA — a iluminação comum continua.",
+    "message.lumaworks.rgb_help": "/lumargb on | off | toggle | guide. Atalho opcional: Opções > Controles > Teclas.",
+    "guide.lumaworks.page1": "GUIA DE LUZES\n\n16 cores: blocos, lajes, painéis, arandelas, bulbos, barras, fitas e postes de três blocos.\n\nReceitas com materiais vanilla. Sem addon.",
+    "guide.lumaworks.page2": "LUZ COLORIDA\n\nRGB colore superfícies próximas.\n\n/lumargb on\n/lumargb off\n/lumargb toggle\n\nSua escolha fica salva só para você.",
+    "guide.lumaworks.page3": "RGB E DESEMPENHO\n\nExperimental. Alcance limitado; sem cor em entidades/fluidos.\n\nClocks rápidos pausam o RGB. Ele volta com sinal estável. A luz comum funciona.",
+    "guide.lumaworks.page4": "REDSTONE\n\nNormal: sinal = acesa.\nInvertida: sinal = apagada.\n\nPeça pequena + redstone cria a controlável. Fabrique sozinha para inverter.\n\nUse em indicadores!",
+    "guide.lumaworks.page5": "ACABAMENTO\n\nClique com a chave em blocos, lajes ou painéis para mudar a moldura.\n\nLuz + chave funciona na bancada ou Crafter. A ferramenta volta sem desgaste.",
+    "guide.lumaworks.page6": "FITAS\n\nAgache e clique com a mão vazia para editar. Piso/teto: lados cardeais. Parede: cima, direita, baixo e esquerda.\n\nMantenha um lado. Sem ajuste automático.",
+    "guide.lumaworks.page7": "DICAS DE CONSTRUÇÃO\n\nBulbos nas cercas; fitas nos caminhos; arandelas na parede ou teto. Peças pequenas aceitam água.\n\nUse corante para recolorir. Atalho RGB em Controles.",
+    "message.lumaworks.rgb_paused": "RGB pausado por mudanças rápidas; volta quando o sinal estabiliza. A luz comum continua ativa."
   },
   "assets/lumaworks/models/item/finishing_key.json": {
     "parent": "minecraft:item/handheld",

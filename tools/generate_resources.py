@@ -3,6 +3,7 @@ from pathlib import Path
 import json
 import struct
 import zlib
+import copy
 
 ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources'
 COLORS = dict(white='e8f3f5', orange='f7a345', magenta='d266d7', light_blue='7ec9ed',
@@ -33,14 +34,17 @@ def png(path, color, seamless=False):
             # Own 32px graphite frame and beveled diffuser. Never sampled from reference assets.
             edge = min(x, y, 31-x, 31-y)
             corner = min(x,31-x) + min(y,31-y)
+            # A subtle, tileable 4px diffuser grain; no bevel/seam on frameless pieces.
+            grain = ((x % 4 * 3 + y % 4 * 5) % 7) - 3
+            shade = 1 + grain * .006
             if seamless:
-                pixel = rgb
+                pixel = tuple(max(0,min(255,round(v*shade))) for v in rgb)
             elif edge < 2 or corner < 6:
                 pixel = (47, 51, 57) if edge == 0 else (66, 71, 78)
             elif edge == 2 or corner == 6:
                 pixel = tuple(round(v * .83) for v in rgb)
             else:
-                pixel = rgb
+                pixel = tuple(max(0,min(255,round(v*shade))) for v in rgb)
             rows += bytes(pixel)
     target = ROOT / path
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -100,9 +104,44 @@ def recipe(name, result, count=1, ingredients=None, pattern=None, key=None):
     write(f'data/lumaworks/recipe/{name}.json', data)
 
 
+def post_models(name, color):
+    """Own graphite post: continuous shaft, stepped foot and four inset light panels."""
+    def solid(lo, hi):
+        return {'from':lo,'to':hi,'shade':True,
+                'faces':{d:{'texture':'#metal'} for d in ['up','down','north','south','east','west']}}
+    foot=[solid([3,0,3],[13,1,13]),solid([4,1,4],[12,2,12]),
+          solid([5,2,5],[11,3,11]),solid([6,3,6],[10,5,10]),solid([6.5,5,6.5],[9.5,16,9.5])]
+    middle=[solid([6.5,0,6.5],[9.5,16,9.5])]
+    head=[solid([6.5,0,6.5],[9.5,5,9.5]),solid([5,5,5],[11,6,11]),
+          solid([4,6,4],[12,7,12]),solid([3,7,3],[13,15,13]),
+          solid([2.5,14.75,2.5],[13.5,15.25,13.5]),
+          solid([3.25,15.25,3.25],[12.75,15.75,12.75]),solid([4,15.75,4],[12,16,12])]
+    panels=[('north',[4,8,2.98],[12,14,3.02]),('south',[4,8,12.98],[12,14,13.02]),
+            ('west',[2.98,8,4],[3.02,14,12]),('east',[12.98,8,4],[13.02,14,12])]
+    for face,lo,hi in panels:
+        head.append({'from':lo,'to':hi,'shade':False,
+                     'faces':{face:{'texture':'#light','uv':[0,0,16,16]}}})
+    def save(suffix, elements, item=False):
+        data={'parent':'minecraft:block/block','ambientocclusion':False,
+              'textures':{'metal':'lumaworks:block/housing_graphite',
+                          'light':f'lumaworks:block/{color}_smooth',
+                          'particle':'lumaworks:block/housing_graphite'},'elements':elements}
+        if item:data['display']={'gui':{'rotation':[25,225,0],'translation':[0,0,0],'scale':[1,1,1]}}
+        write(f'assets/lumaworks/models/block/{name}{suffix}.json',data)
+    save('',foot);save('_mid',middle);save('_top',head)
+    miniature=[]
+    for part,elements in enumerate([foot,middle,head]):
+        for element in elements:
+            e=copy.deepcopy(element)
+            for corner in ['from','to']:
+                x,y,z=e[corner];e[corner]=[8+(x-8)/3,(y+part*16)/3,8+(z-8)/3]
+            miniature.append(e)
+    save('_item',miniature,True)
+
+
 def generate():
-    en = {'itemGroup.lumaworks': 'Refeito: Simply Light'}
-    pt = {'itemGroup.lumaworks': 'Refeito: Simply Light'}
+    en = {'itemGroup.lumaworks': 'Simply Light: Reforged RGB'}
+    pt = {'itemGroup.lumaworks': 'Simply Light: Reforged RGB'}
     en.update({'message.lumaworks.framed':'Graphite frame', 'message.lumaworks.seamless':'Seamless surface — place matching lights together'})
     pt.update({'message.lumaworks.framed':'Moldura grafite', 'message.lumaworks.seamless':'Superfície contínua — junte peças da mesma cor'})
     en.update({'gui.lumaworks.edge_editor':'Light strip directions', 'gui.lumaworks.north':'North',
@@ -144,8 +183,7 @@ def generate():
                 state = {'variants': {f'lit={lit},framed={framed}': {'model': f'lumaworks:block/{name}'+('' if lit=='true' else '_off')+('' if framed=='true' else '_smooth')}
                     for lit in ['true','false'] for framed in ['true','false']}}
             elif form == 'column':
-                model(name+'_mid', color, [([6,0,6],[10,16,10])], dark=True)
-                model(name+'_top', color, [([6,0,6],[10,5,10]),([4,5,4],[12,15,12])])
+                post_models(name,color)
                 state = {'variants': {'part=0': {'model':f'lumaworks:block/{name}'}, 'part=1': {'model':f'lumaworks:block/{name}_mid'}, 'part=2': {'model':f'lumaworks:block/{name}_top'}}}
             elif form.startswith('strip'):
                 parts = []
@@ -162,7 +200,7 @@ def generate():
                     state = {'variants': {f'facing={d},framed={framed}': {'model':f'lumaworks:block/{name}'+('' if framed=='true' else '_smooth'), 'x':x, 'y':y}
                         for d,(x,y) in transforms.items() for framed in ['true','false']}}
             write(f'assets/lumaworks/blockstates/{name}.json', state)
-            write(f'assets/lumaworks/items/{name}.json', {'model':{'type':'minecraft:model','model':f'lumaworks:block/{name}'}})
+            write(f'assets/lumaworks/items/{name}.json', {'model':{'type':'minecraft:model','model':f'lumaworks:block/{name}'+('_item' if form=='column' else '')}})
             pool = {'rolls':1,'entries':[{'type':'minecraft:item','name':f'lumaworks:{name}'}], 'conditions':[{'condition':'minecraft:survives_explosion'}]}
             if form in ('signal','inverse','slab','panel'):
                 pool['entries'][0]['functions'] = [{'function':'minecraft:copy_state', 'block':f'lumaworks:{name}', 'properties':['framed']}]
@@ -186,8 +224,47 @@ def generate():
             if form == 'strip_high': recipe(name+'_lower', f'{color}_strip_low', ingredients=[f'lumaworks:{name}'])
             if form == 'slab': recipe(name+'_split', f'{color}_panel', 2, ingredients=[f'lumaworks:{name}'])
             if form == 'panel': recipe(name+'_combine', f'{color}_slab', ingredients=[f'lumaworks:{name}',f'lumaworks:{name}'])
+            if form in ('fixture','bulb','tube','strip_low','strip_high'):
+                # Reuse our geometry; an unpowered diffuser is dark, while its metal housing stays intact.
+                base_model=json.loads((ROOT/f'assets/lumaworks/models/block/{name}.json').read_text(encoding='utf-8'))
+                off_model=copy.deepcopy(base_model)
+                off_model['textures']['light']='lumaworks:block/unlit_smooth'
+                off_model['textures']['particle']='lumaworks:block/unlit_smooth'
+                write(f'assets/lumaworks/models/block/{name}_controlled_off.json',off_model)
+                for suffix in ('redstone','redstone_inverted'):
+                    controlled=name+'_'+suffix;names.append(controlled)
+                    en[f'block.lumaworks.{controlled}']=en[f'block.lumaworks.{name}']+(' — Redstone' if suffix=='redstone' else ' — Inverted Redstone')
+                    pt[f'block.lumaworks.{controlled}']=pt[f'block.lumaworks.{name}']+(' — Redstone' if suffix=='redstone' else ' — Redstone invertida')
+                    if 'multipart' in state:
+                        controlled_state={'multipart':[]}
+                        for part in state['multipart']:
+                            for lit in ('true','false'):
+                                piece=copy.deepcopy(part);piece['when']['lit']=lit
+                                if lit=='false':piece['apply']['model']=f'lumaworks:block/{name}_controlled_off'
+                                controlled_state['multipart'].append(piece)
+                    else:
+                        controlled_state={'variants':{}}
+                        for selector,variant in state['variants'].items():
+                            for lit in ('true','false'):
+                                piece=copy.deepcopy(variant)
+                                if lit=='false':piece['model']=f'lumaworks:block/{name}_controlled_off'
+                                controlled_state['variants'][selector+',lit='+lit]=piece
+                    write(f'assets/lumaworks/blockstates/{controlled}.json',controlled_state)
+                    write(f'assets/lumaworks/items/{controlled}.json',{'model':{'type':'minecraft:model','model':f'lumaworks:block/{name}'}})
+                    write(f'data/lumaworks/loot_table/blocks/{controlled}.json',{'type':'minecraft:block','pools':[{'rolls':1,'entries':[{'type':'minecraft:item','name':'lumaworks:'+controlled}],'conditions':[{'condition':'minecraft:survives_explosion'}]}]})
+                    recipe(controlled+'_recolor',controlled,8,pattern=['LLL','LDL','LLL'],key={'L':f'#lumaworks:{form}_{suffix}','D':f'minecraft:{color}_dye'})
+                    opposite=name+('_redstone_inverted' if suffix=='redstone' else '_redstone')
+                    recipe(controlled+'_toggle',opposite,ingredients=['lumaworks:'+controlled])
+                    if suffix=='redstone':recipe(controlled+'_upgrade',controlled,ingredients=['lumaworks:'+name,'minecraft:redstone'])
+                    if form.startswith('strip'):
+                        other='strip_high' if form=='strip_low' else 'strip_low'
+                        recipe(controlled+'_height',color+'_'+other+'_'+suffix,2,ingredients=['lumaworks:'+controlled,'lumaworks:'+controlled])
+                        # Two strips change height without conflicting with the one-item mode toggle.
     for form in FORMS:
         write(f'data/lumaworks/tags/item/{form}.json', {'replace':False, 'values':[f'lumaworks:{c}_{form}' for c in COLORS]})
+        if form in ('fixture','bulb','tube','strip_low','strip_high'):
+            for suffix in ('redstone','redstone_inverted'):
+                write(f'data/lumaworks/tags/item/{form}_{suffix}.json',{'replace':False,'values':[f'lumaworks:{c}_{form}_{suffix}' for c in COLORS]})
     write('data/minecraft/tags/block/mineable/pickaxe.json', {'replace':False,'values':[f'lumaworks:{n}' for n in names]})
     write('assets/lumaworks/lang/en_us.json', en)
     write('assets/lumaworks/lang/pt_br.json', pt)
@@ -195,10 +272,29 @@ def generate():
     draw_finishing_key(ROOT / 'assets/lumaworks/textures/item/finishing_key.png')
     # Finishing variants and editor translations are maintained as original data resources.
     for path, data in json.loads((Path(__file__).parent / 'finishing_resources.json').read_text(encoding='utf-8')).items():
+        if '/lang/' in path:
+            merged=json.loads((ROOT/path).read_text(encoding='utf-8'));merged.update(data);data=merged
+        if path=='data/minecraft/tags/block/mineable/pickaxe.json':
+            data=copy.deepcopy(data);data['values']=sorted(set(data['values'])|set(json.loads((ROOT/path).read_text(encoding='utf-8'))['values']))
         write(path, data)
     from recipe_book_resources import generate as recipe_book
+    for language in ('en_us','pt_br'):
+        path=ROOT/f'assets/lumaworks/lang/{language}.json';data=json.loads(path.read_text(encoding='utf-8'))
+        data.update({'tooltip.lumaworks.redstone.normal':('Turns on with redstone. Craft alone to invert.' if language=='en_us' else 'Acende com redstone. Fabrique sozinha para inverter.'),
+                     'tooltip.lumaworks.redstone.inverted':('Turns off with redstone. Craft alone to normalize.' if language=='en_us' else 'Apaga com redstone. Fabrique sozinha para normalizar.')})
+        data.update({'gui.lumaworks.neighbor':('Neighbor: %s' if language=='en_us' else 'Vizinho: %s'),
+                     'gui.lumaworks.neighbor_unavailable':('Not loaded' if language=='en_us' else 'Não carregado')})
+        write(f'assets/lumaworks/lang/{language}.json',data)
+    from wall_strip_resources import generate as wall_resources
+    wall_resources(ROOT)
+    from create_compat_resources import generate as create_resources
+    create_resources(ROOT)
+    from naming_resources import generate as naming_resources
+    naming_resources(ROOT)
+    from item_preview_resources import generate as item_previews
+    item_previews(ROOT)
     recipe_book(ROOT)
-    print('Generated 224 independent lights, finishing tool and editor translations.')
+    print('Generated 432 independent lights, finishing tool and editor translations.')
 
 
 if __name__ == '__main__':
