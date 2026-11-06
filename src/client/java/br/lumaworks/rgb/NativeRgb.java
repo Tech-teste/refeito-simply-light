@@ -28,6 +28,14 @@ public final class NativeRgb {
  // Same original palette used by tools/generate_resources.py, not the vanilla dye swatch.
  private static final int[] LIGHT_COLORS={0xe8f3f5,0xf7a345,0xd266d7,0x7ec9ed,0xf5df6a,0xa7d564,0xf5a4c0,0x646d79,0xb6c1c9,0x43b9bd,0x9869d6,0x658bea,0xae8264,0x6aaf71,0xe56d70,0x414953};
  private static final LinkedHashSet<Long> PENDING=new LinkedHashSet<>();
+ // Private scratch arrays are never published to mesh workers; reuse avoids ~1.25 MiB/job.
+ private static final int[] WORK_QUEUE=new int[CELLS*4];
+ private static final byte[] WORK_LIGHT=new byte[CELLS];
+ private static Invalidation invalidation;
+ private static boolean rapidUpdatesPaused;
+ private static Field suspendedBounds;
+ private static int discardStreak;
+ private static long rapidPauses;
  private static long queuedSections,submittedSections;
  public static volatile boolean enabled=false;
  private static Boolean configuredEnabled;
@@ -42,26 +50,28 @@ public final class NativeRgb {
  }
  public static void setEnabled(boolean value){
   if(enabled==value)return;
-  enabled=value;dirty=true;revision++;
-  if(!value){var old=field;field=null;job=null;if(old!=null)invalidate(old,null);}
+  enabled=value;dirty=true;revision++;rapidUpdatesPaused=false;suspendedBounds=null;discardStreak=0;
+  if(!value){var old=field;field=null;job=null;if(invalidation!=null){enqueueAll(invalidation.old);enqueueAll(invalidation.next);invalidation=null;}enqueueAll(old);}
  }
  public static void changed(BlockPos pos,BlockState old,BlockState state){
   if(old.getLightEmission()==state.getLightEmission()&&old.getLightDampening()==state.getLightDampening()&&source(old)==source(state))return;
-  var f=field;var j=job;
+  var f=field==null?suspendedBounds:field;var j=job;
   if(f==null||inside(pos,f.x,f.y,f.z)||j!=null&&inside(pos,j.x,j.y,j.z)){dirty=true;revision++;sinceChange=0;}
  }
  public static void chunkChanged(int cx,int cz){
-  Field f=field;Job j=job;
+  Field f=field==null?suspendedBounds:field;Job j=job;
   if(f==null||overlapsChunk(cx,cz,f.x,f.z)||j!=null&&overlapsChunk(cx,cz,j.x,j.z)){dirty=true;revision++;sinceChange=0;}
  }
  private static boolean overlapsChunk(int cx,int cz,int x,int z){return (cx<<4)<x+WIDTH&&((cx+1)<<4)>x&&(cz<<4)<z+WIDTH&&((cz+1)<<4)>z;}
  private static boolean inside(BlockPos p,int x,int y,int z){return p.getX()>=x&&p.getX()<x+WIDTH&&p.getY()>=y&&p.getY()<y+HEIGHT&&p.getZ()>=z&&p.getZ()<z+WIDTH;}
  @SubscribeEvent public static void tick(ClientTickEvent.Post event){
   var mc=Minecraft.getInstance();var level=mc.level;
-  if(world!=level){world=level;field=null;job=null;dirty=true;revision++;COLORS.clear();PENDING.clear();}
+  if(world!=level){world=level;field=null;job=null;invalidation=null;rapidUpdatesPaused=false;suspendedBounds=null;discardStreak=0;dirty=true;revision++;COLORS.clear();PENDING.clear();}
   if(level==null||mc.player==null)return;
   boolean requested=ClientLightingConfig.NATIVE_RGB.get();
   if(configuredEnabled==null||configuredEnabled!=requested){configuredEnabled=requested;setEnabled(requested);}
+  long begin=System.nanoTime(),deadline=begin+BUDGET_NS;
+  if(invalidation!=null&&invalidation.step(deadline))invalidation=null;
   flushSections();
   if(!enabled)return;
   if(COLORS.isEmpty())initializeColors();
@@ -69,16 +79,26 @@ public final class NativeRgb {
   if(field!=null&&(field.x!=x||field.y!=y||field.z!=z)&&job==null){dirty=true;revision++;}
   if(field!=null&&field.skyDarken!=level.getSkyDarken()&&job==null){dirty=true;revision++;}
   sinceChange++;
-  if(job==null&&dirty&&sinceChange>=2){job=new Job(level,x,y,z,revision);dirty=false;}
-  if(job==null)return;
-  long begin=System.nanoTime();
+  if(rapidUpdatesPaused){
+   if(sinceChange<6)return;
+   rapidUpdatesPaused=false;suspendedBounds=null;discardStreak=0;dirty=true;
+  }
+  if(job==null&&invalidation==null&&dirty&&sinceChange>=2){job=new Job(level,x,y,z,revision);dirty=false;}
+  if(job==null){long used=System.nanoTime()-begin;totalWorkNs+=used;maxSliceNs=Math.max(maxSliceNs,used);return;}
   try{
-   boolean done=job.step(level,begin+BUDGET_NS);long used=System.nanoTime()-begin;totalWorkNs+=used;maxSliceNs=Math.max(maxSliceNs,used);
+   boolean done=job.step(level,deadline);long used=System.nanoTime()-begin;totalWorkNs+=used;maxSliceNs=Math.max(maxSliceNs,used);
    if(done){
     Job finished=job;job=null;
-    if(finished.revision!=revision){discarded++;dirty=true;return;}
+    if(finished.revision!=revision){
+     discarded++;dirty=true;
+     if(++discardStreak>=4){
+      // Never retain a stale colored bake under an unsustainably fast redstone clock.
+      suspendedBounds=field;enqueueAll(field);field=null;rapidUpdatesPaused=true;rapidPauses++;
+     }
+     return;
+    }
     var next=new Field(finished.x,finished.y,finished.z,level.getSkyDarken(),finished.rgb,finished.opacity,finished.factors);var old=field;
-    field=next;jobs++;lastSources=finished.sources;lastVisits=finished.visits;lastBuildNs=System.nanoTime()-finished.start;
+    field=next;discardStreak=0;jobs++;lastSources=finished.sources;lastVisits=finished.visits;lastBuildNs=System.nanoTime()-finished.start;
     invalidate(old,next);
    }
   }catch(Throwable e){error=e.toString();job=null;setEnabled(false);}
@@ -92,15 +112,30 @@ public final class NativeRgb {
  private static int source(BlockState s){Integer color=COLORS.get(s.getBlock());if(color==null)return 0;int level=s.getLightEmission();if(level==0)return 0;return ((color>>16&255)*level/15)<<16|((color>>8&255)*level/15)<<8|(color&255)*level/15;}
  private static int visual(Field f,int x,int y,int z){if(f==null)return 0xffffff;return f.factor(x,y,z);}
  private static void invalidate(Field old,Field next){
-  Field base=next==null?old:next;if(base==null)return;
-  int minX=base.x,minY=base.y,minZ=base.z,maxX=minX+WIDTH,maxY=minY+HEIGHT,maxZ=minZ+WIDTH;
-  if(old!=null){minX=Math.min(minX,old.x);minY=Math.min(minY,old.y);minZ=Math.min(minZ,old.z);maxX=Math.max(maxX,old.x+WIDTH);maxY=Math.max(maxY,old.y+HEIGHT);maxZ=Math.max(maxZ,old.z+WIDTH);}
-  for(int sx=(minX-1)>>4;sx<=maxX>>4;sx++)for(int sy=(minY-1)>>4;sy<=maxY>>4;sy++)for(int sz=(minZ-1)>>4;sz<=maxZ>>4;sz++){
-   boolean changed=false;
-   outer:for(int y=Math.max(minY,(sy<<4)-1);y<Math.min(maxY,(sy<<4)+17);y++)for(int z=Math.max(minZ,(sz<<4)-1);z<Math.min(maxZ,(sz<<4)+17);z++)for(int x=Math.max(minX,(sx<<4)-1);x<Math.min(maxX,(sx<<4)+17);x++){
-    if(visual(old,x,y,z)!=visual(next,x,y,z)){changed=true;break outer;}
+  invalidation=new Invalidation(old,next);
+ }
+ private static void sections(Field f,Set<Long> target){
+  if(f==null)return;
+  for(int x=(f.x-1)>>4;x<=(f.x+WIDTH)>>4;x++)for(int y=(f.y-1)>>4;y<=(f.y+HEIGHT)>>4;y++)for(int z=(f.z-1)>>4;z<=(f.z+WIDTH)>>4;z++)target.add(SectionPos.asLong(x,y,z));
+ }
+ private static void enqueueAll(Field f){var sections=new LinkedHashSet<Long>();sections(f,sections);for(long key:sections)if(PENDING.add(key))queuedSections++;}
+ /** Union of two bounded regions, never the enormous bounding box between teleports. */
+ private static final class Invalidation {
+  final Field old,next;final Iterator<Long> sections;long current;int cell;boolean hasCurrent;
+  Invalidation(Field old,Field next){this.old=old;this.next=next;var keys=new LinkedHashSet<Long>();sections(old,keys);sections(next,keys);sections=keys.iterator();}
+  boolean step(long deadline){
+   int work=0;
+   while(hasCurrent||sections.hasNext()){
+    if(!hasCurrent){current=sections.next();cell=0;hasCurrent=true;}
+    while(cell<18*18*18){
+     int i=cell++,x=(SectionPos.x(current)<<4)-1+i%18,y=(SectionPos.y(current)<<4)-1+i/(18*18),z=(SectionPos.z(current)<<4)-1+i/18%18;
+     if(visual(old,x,y,z)!=visual(next,x,y,z)){if(PENDING.add(current))queuedSections++;cell=18*18*18;break;}
+     if((++work&63)==0&&System.nanoTime()>=deadline)return false;
+    }
+    hasCurrent=false;
+    if(System.nanoTime()>=deadline)return false;
    }
-   if(changed&&PENDING.add(SectionPos.asLong(sx,sy,sz)))queuedSections++;
+   return true;
   }
  }
  private static void flushSections(){
@@ -145,11 +180,11 @@ public final class NativeRgb {
   return Math.round(255*(1-influence*(1-r/(float)m)))<<16|Math.round(255*(1-influence*(1-g/(float)m)))<<8|Math.round(255*(1-influence*(1-b/(float)m)));
  }
  public static Map<String,Object> stats(){
-  var f=field;Map<String,Object> r=new LinkedHashMap<>();r.put("enabled",enabled);r.put("ready",f!=null);r.put("building",job!=null);r.put("jobs",jobs);r.put("discarded_jobs",discarded);r.put("total_work_ms",totalWorkNs/1e6);r.put("max_slice_ms",maxSliceNs/1e6);r.put("last_latency_ms",lastBuildNs/1e6);r.put("sources",lastSources);r.put("visited_nodes",lastVisits);r.put("bounded_volume_cells",CELLS);r.put("field_bytes",CELLS*9);r.put("job_array_bytes",CELLS*(4+4+1+1+16));r.put("queued_sections",queuedSections);r.put("submitted_sections",submittedSections);r.put("pending_sections",PENDING.size());r.put("renderer",ModList.get().isLoaded("sodium")?"sodium":"vanilla");r.put("sky_darken",f==null?-1:f.skyDarken);r.put("error",error);return r;
+  var f=field;Map<String,Object> r=new LinkedHashMap<>();r.put("enabled",enabled);r.put("rapid_updates_paused",rapidUpdatesPaused);r.put("rapid_pause_count",rapidPauses);r.put("ready",f!=null);r.put("building",job!=null||invalidation!=null);r.put("comparing_sections",invalidation!=null);r.put("work_arrays_reused",true);r.put("job_allocation_bytes",CELLS*9);r.put("jobs",jobs);r.put("discarded_jobs",discarded);r.put("total_work_ms",totalWorkNs/1e6);r.put("max_slice_ms",maxSliceNs/1e6);r.put("last_latency_ms",lastBuildNs/1e6);r.put("sources",lastSources);r.put("visited_nodes",lastVisits);r.put("bounded_volume_cells",CELLS);r.put("field_bytes",CELLS*9);r.put("job_array_bytes",CELLS*(4+4+1+1+16));r.put("queued_sections",queuedSections);r.put("submitted_sections",submittedSections);r.put("pending_sections",PENDING.size());r.put("renderer",ModList.get().isLoaded("sodium")?"sodium":"vanilla");r.put("sky_darken",f==null?-1:f.skyDarken);r.put("error",error);return r;
  }
  /** Main-thread snapshot/propagation split into time-budgeted slices; immutable result read by mesh workers. */
  private static final class Job {
-  final int x,y,z;final long revision,start=System.nanoTime();final int[] rgb=new int[CELLS],queue=new int[CELLS*4],factors=new int[CELLS];final byte[] opacity=new byte[CELLS],light=new byte[CELLS];
+  final int x,y,z;final long revision,start=System.nanoTime();final int[] rgb=new int[CELLS],queue=WORK_QUEUE,factors=new int[CELLS];final byte[] opacity=new byte[CELLS],light=WORK_LIGHT;
   final BlockPos.MutableBlockPos pos=new BlockPos.MutableBlockPos();int scan,head,tail,count,sources,visits,bake;
   Job(ClientLevel level,int x,int y,int z,long revision){this.x=x;this.y=y;this.z=z;this.revision=revision;}
   void push(int i){if(count==queue.length)throw new IllegalStateException("RGB work queue budget exceeded");queue[tail]=i;tail=(tail+1)%queue.length;count++;}
@@ -157,7 +192,7 @@ public final class NativeRgb {
    int work=0;
    while(scan<CELLS){
     int i=scan++,dx=i%WIDTH,dz=i/WIDTH%WIDTH,dy=i/(WIDTH*WIDTH);pos.set(x+dx,y+dy,z+dz);
-    if(!level.hasChunk(pos.getX()>>4,pos.getZ()>>4)){opacity[i]=15;}else{var state=level.getBlockState(pos);opacity[i]=(byte)state.getLightDampening();light[i]=(byte)(level.getBrightness(LightLayer.SKY,pos)<<4|level.getBrightness(LightLayer.BLOCK,pos));int c=source(state);if(c!=0){rgb[i]=c;push(i);sources++;}}
+    if(!level.hasChunk(pos.getX()>>4,pos.getZ()>>4)){opacity[i]=15;light[i]=0;}else{var state=level.getBlockState(pos);opacity[i]=(byte)state.getLightDampening();light[i]=(byte)(level.getBrightness(LightLayer.SKY,pos)<<4|level.getBrightness(LightLayer.BLOCK,pos));int c=source(state);if(c!=0){rgb[i]=c;push(i);sources++;}}
     if((++work&63)==0&&System.nanoTime()>=deadline)return false;
    }
    while(count>0){
