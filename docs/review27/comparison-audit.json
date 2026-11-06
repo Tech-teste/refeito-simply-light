@@ -1,0 +1,30 @@
+{
+  "status": "MAPPED_WITH_DOCUMENTED_DIFFERENCES",
+  "reference": "Simply Light1.5.3 / Minecraft1.21.1 local source snapshot",
+  "original_live_runtime_tested": false,
+  "original_java_source_sha256": {
+    "SLBlocks.java": "b44faa6793fa8f4e7af4a228442cf167dcf22f936567b29271f5bb1f354c4d2f",
+    "blocks/EdgeLight.java": "db706172fcee4e83e7b74586476fa0db7856917d77539d43207bc40705350169",
+    "blocks/ThinLamp.java": "444dad2809cf0c8110f5580f66e183486edc983d23e6617d09dbf8eddea9c0f9",
+    "blocks/LampBlock.java": "755cc53443130210eb201fec10f33ac864b667e224fa241541fb3df1381ef323",
+    "blocks/LampPost.java": "52bde34bb3a212505df98823a967ec227a5eaa1338323241bc942d0cb892986d",
+    "blocks/BaseBlockItem.java": "c939ec20d94be59a82de100ded4075aa34271c34dd993e777d0b31a6219374cb",
+    "blocks/LampPostItem.java": "f1946319f66798d7f71064ee77ee7e4af731737a9ba244a8ec563b43f5e8dcb2",
+    "data/Recipes.java": "1e2ce94e3169dcb3abba911ddbcb9f7b03eabe84213ae27e7af6e3b4235da8dd"
+  },
+  "candidate": "Alpha27",
+  "candidate_jar_sha256": "18adcec123d3d067f6129a1abdb0720acae2337cbed2ecb69f9a0c3ddb5bdba5",
+  "reference_ids": 160,
+  "mapped_unique_candidate_ids": 160,
+  "candidate_ids": 432,
+  "additional_ids": {
+    "frameless": 64,
+    "small_redstone_normal_inverted": 160,
+    "manual_wall_strips": 48
+  },
+  "dynamic_ctm_equivalence": false,
+  "automatic_id_migration": false,
+  "pt_br_reference_translation_exists": false,
+  "original_assets_or_source_copied": false,
+  "limits": "Core mapping plus independent runtime evidence; not pixel-perfect or CTM parity. Original runtime not launched."
+}

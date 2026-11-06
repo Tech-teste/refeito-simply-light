@@ -1,0 +1,106 @@
+{
+  "status": "DIAGNOSIS_WITH_SCOPE",
+  "candidate": "Alpha27",
+  "profiling_windows": 8,
+  "timed_seconds": 240.0232205,
+  "rgb_order": [
+    false,
+    true,
+    true,
+    false,
+    true,
+    false,
+    false,
+    true
+  ],
+  "period_ticks": 2,
+  "emission_checks": 48000,
+  "redstone_transitions": 2400,
+  "all_settled_pending_zero": true,
+  "largest_tick": {
+    "duration_ms": 379.0159,
+    "samples_in_span": 16,
+    "inclusive_categories": {
+      "world_save_inclusive": 15
+    },
+    "overlapping_gc_pauses": []
+  },
+  "render_spans_over150ms": [
+    {
+      "duration_ms": 204.4289,
+      "samples_in_span": 14,
+      "inclusive_categories": {
+        "recipe_viewer_inclusive": 12,
+        "scc_analysis_inclusive": 8
+      },
+      "overlapping_gc_pauses": []
+    },
+    {
+      "duration_ms": 166.2594,
+      "samples_in_span": 15,
+      "inclusive_categories": {
+        "recipe_viewer_inclusive": 9,
+        "scc_analysis_inclusive": 9
+      },
+      "overlapping_gc_pauses": [
+        {
+          "event": "jdk.GCPhasePause",
+          "duration_ms": 0.0581
+        }
+      ]
+    },
+    {
+      "duration_ms": 225.4481,
+      "samples_in_span": 20,
+      "inclusive_categories": {
+        "recipe_viewer_inclusive": 19,
+        "scc_analysis_inclusive": 19
+      },
+      "overlapping_gc_pauses": []
+    },
+    {
+      "duration_ms": 164.0205,
+      "samples_in_span": 4,
+      "inclusive_categories": {
+        "recipe_viewer_inclusive": 3,
+        "scc_analysis_inclusive": 3
+      },
+      "overlapping_gc_pauses": [
+        {
+          "event": "jdk.GCPhasePause",
+          "duration_ms": 42.0332
+        }
+      ]
+    },
+    {
+      "duration_ms": 167.0913,
+      "samples_in_span": 12,
+      "inclusive_categories": {
+        "scc_analysis_inclusive": 11
+      },
+      "overlapping_gc_pauses": []
+    }
+  ],
+  "jfr_gc_pause_max_ms": 73.4986,
+  "spark_tps_recent": [
+    20,
+    20,
+    20,
+    20,
+    19.95
+  ],
+  "spark_recent_tick_max_ms_10s_1m": [
+    5,
+    15.4
+  ],
+  "raw_recording_sha256": "fdf0206b874b15740868e029cc91d797824266299f9fad75b58388ae98f9deea",
+  "raw_jfr_kept_private": true,
+  "limits": [
+    "JFR profiling overhead is present; these are diagnostic repetitions, not clean FPS comparisons.",
+    "Category counts overlap and are inclusive samples, not percentages of exclusive CPU cost.",
+    "The379ms tick is linked to world-save/serialization stacks in15of16samples, with no sampled RGB code in that span. This does not prove zero RGB cost.",
+    "Large render intervals show SCC analysis and JEI/recipe catalog stacks. No pack mod was disabled or modified.",
+    "Spark screenshot is after the run; its last-minute max excludes the earlier379ms event.",
+    "No global mouse/keyboard used; auxiliary process closed and configs restored."
+  ]
+}
