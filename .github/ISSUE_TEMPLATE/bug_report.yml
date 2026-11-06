@@ -1,0 +1,28 @@
+name: Bug report / Relatar problema
+description: Lighting, crafting or compatibility / Iluminação, crafts ou compatibilidade
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Mod, Minecraft and NeoForge versions / Versões
+    validations:
+      required: true
+  - type: input
+    id: rendering
+    attributes:
+      label: Renderer and shader / Renderizador e shader
+      description: Vanilla or Sodium/Iris versions, shader name/version, RGB on/off. / Versões Sodium/Iris, nome/versão do shader e RGB ligado/desligado.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps and expected/actual result / Passos e resultado
+      description: Include block/color/mode, redstone clock and water where relevant. / Informe bloco, cor, modo, relógio de redstone e água quando relevantes.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence / Evidências
+      description: Remove personal data from logs. For performance, include hardware, scene, duration and RGB-off comparison. / Remova dados pessoais; inclua cenário e comparação sem RGB.
