@@ -1,6 +1,6 @@
 {
   "status": "PASS",
-  "jar_sha256": "190d26625cbbdfdc0f6f47c8cdc26ee93fcca657599182be94e765e2c9995556",
+  "jar_sha256": "4b6190c415d139536f6b691e03baa8fe7ddff11b32b6b828bdc68f1dfbf33f72",
   "clean_build_identical": true,
   "changed_entries_from27": [
     "META-INF/neoforge.mods.toml",
@@ -8,5 +8,9 @@
   ],
   "test_helpers_excluded": true,
   "rgb_runtime_unchanged": true,
-  "block_resources_ids_recipes_unchanged": true
+  "block_resources_ids_recipes_unchanged": true,
+  "pre_normalization_jar_sha256": "190d26625cbbdfdc0f6f47c8cdc26ee93fcca657599182be94e765e2c9995556",
+  "packaging_normalized": true,
+  "changed_entries_from27_scope": "Before LF packaging normalization: only version metadata and editor class changed. Later4353JSONline-ending changes are decoded-content identical.",
+  "matches_github_hosted_jar": true
 }
