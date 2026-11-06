@@ -1,5 +1,5 @@
 plugins { id 'java-library'; id 'net.neoforged.moddev' version '2.0.148' }
-version = '0.1.0-alpha.26+26.1.2'
+version = '0.1.0-alpha.27+26.1.2'
 group = 'br.lumaworks'
 base { archivesName = 'luma-works' }
 java { toolchain.languageVersion = JavaLanguageVersion.of(25); withSourcesJar() }
