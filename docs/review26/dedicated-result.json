@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "assertions": 195851,
+  "lights": 432,
+  "version": "Alpha26",
+  "dedicated_server_runtime": true,
+  "development_fixture": true,
+  "bind_address": "127.0.0.1",
+  "external_client_network_connection": "NOT TESTED",
+  "normal_shutdown_observed": true,
+  "port_closed_after_run": true,
+  "normal_release_rebuilt_without_test_classes": true,
+  "normal_release_byte_identical_to_submitted": true,
+  "jar_sha256": "ce5198c76db57c89b8224d5cc593e9fd208fe32db195cef28be633a82cbbed56",
+  "scope": [
+    "registered states and shapes",
+    "waterlogging/fluid states",
+    "redstone modes",
+    "post dismantling",
+    "direction editor checks",
+    "permissions and invalid requests",
+    "optional Create-tag collision correspondence"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "candidate": "Alpha26",
+  "actual_dedicated_client_connection": "127.0.0.1:25565",
+  "client_block_registration_received": true,
+  "redstone_packets_both_states": true,
+  "wrench_client_to_server_and_state_back": true,
+  "external_multiplayer": "NOT TESTED",
+  "desktop_input_used": false
+}

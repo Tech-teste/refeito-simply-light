@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "actual_gui_saved_true": true,
+  "config_file_true_before_exit": true,
+  "full_process_restart": true,
+  "config_true_after_restart": true,
+  "rgb_enabled_after_restart": true,
+  "candidate": "Alpha26"
+}
