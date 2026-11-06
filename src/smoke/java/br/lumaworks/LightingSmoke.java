@@ -24,10 +24,22 @@ public final class LightingSmoke {
         var level = server.overworld();
         String result;
         try {
-            require(LumaWorks.LIGHTS.size() == 224, "224 registered lights");
+            require(LumaWorks.LIGHTS.size() == 432, "432 registered lights");
             int totalStates=LumaWorks.LIGHTS.values().stream().mapToInt(b -> b.get().getStateDefinition().getPossibleStates().size()).sum();
-            require(totalStates <= 5000,"bounded state count: "+totalStates);
+            require(totalStates <= 21000,"bounded state count: "+totalStates);
             BlockPos origin = new BlockPos(0, 220, 0);
+            var movableEmpty = net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.BLOCK,
+                net.minecraft.resources.Identifier.fromNamespaceAndPath("create", "movable_empty_collider"));
+            int emptyColliderLights = 0;
+            for (var holder : LumaWorks.LIGHTS.values()) {
+                var block = holder.get();
+                for (var candidate : block.getStateDefinition().getPossibleStates()) {
+                    boolean empty = candidate.getCollisionShape(level, origin).isEmpty();
+                    require(candidate.is(movableEmpty) == empty, "Create movable empty-collider coverage: " + candidate);
+                }
+                if (block.defaultBlockState().is(movableEmpty)) emptyColliderLights++;
+            }
+            require(emptyColliderLights == 240, "all 240 collisionless lamps tagged for Create");
             for (var entry : LumaWorks.LIGHTS.entrySet()) {
                 Block block = entry.getValue().get();
                 BlockState state = block.defaultBlockState();
@@ -41,7 +53,7 @@ public final class LightingSmoke {
                 require(!state.hasBlockEntity(), entry.getKey() + " has no block entity");
                 require(!state.isRandomlyTicking(), entry.getKey() + " has no random-tick workload");
                 if(state.hasProperty(ArchitecturalLight.LIT)) for(boolean lit:new boolean[]{false,true})
-                    require(state.setValue(ArchitecturalLight.LIT,lit).getLightEmission()==(lit?15:0),"correct cached light level for every color and finish");
+                    require(state.setValue(ArchitecturalLight.LIT,lit).getLightEmission()==(lit?(entry.getKey().matches(".*_(bulb|strip_low|strip_high|strip_wall)_redstone.*")?14:15):0),"correct cached light level for every color and finish");
                 require(!state.getShape(level, origin).isEmpty(), entry.getKey() + " has selection shape");
                 if (block instanceof ArchitecturalLight) {
                     BlockState wet = state.setValue(ArchitecturalLight.WATER, true);
@@ -64,10 +76,10 @@ public final class LightingSmoke {
             // Full lamps must hide internal faces, including different colors and finishes.
             for(var first:LumaWorks.LIGHTS.values()) {
                 var state=first.get().defaultBlockState();
-                if(!state.hasProperty(ArchitecturalLight.LIT))continue;
+                if(!state.hasProperty(ArchitecturalLight.LIT)||!state.hasProperty(ArchitecturalLight.FRAMED))continue;
                 for(var second:LumaWorks.LIGHTS.values()) {
                     var neighbor=second.get().defaultBlockState();
-                    if(!neighbor.hasProperty(ArchitecturalLight.LIT))continue;
+                    if(!neighbor.hasProperty(ArchitecturalLight.LIT)||!neighbor.hasProperty(ArchitecturalLight.FRAMED))continue;
                     for(var direction:Direction.values())require(!Block.shouldRenderFace(state,neighbor,direction),"internal full lamp face hidden");
                 }
                 for(var direction:Direction.values())require(Block.shouldRenderFace(state,Blocks.AIR.defaultBlockState(),direction),"outer lamp face remains visible");
@@ -76,6 +88,7 @@ public final class LightingSmoke {
             fake.setGameMode(net.minecraft.world.level.GameType.CREATIVE);
             fake.setShiftKeyDown(true);
             fake.setPos(.5,220,2.5);
+            checks += WallStripSmoke.run(level, fake, origin);
             for(var registration:LumaWorks.LIGHTS.values()) {
                 var block=registration.get();
                 if(!block.defaultBlockState().hasProperty(ArchitecturalLight.EDGES)) continue;
@@ -163,6 +176,27 @@ public final class LightingSmoke {
             var crafter=(net.minecraft.world.level.block.entity.CrafterBlockEntity)level.getBlockEntity(machine);
             var chest=(net.minecraft.world.level.block.entity.ChestBlockEntity)level.getBlockEntity(output);
             var pulse=CrafterBlock.class.getDeclaredMethod("dispenseFrom",BlockState.class,net.minecraft.server.level.ServerLevel.class,BlockPos.class);pulse.setAccessible(true);
+            for(var color:net.minecraft.world.item.DyeColor.values()) for(String form:new String[]{"fixture","bulb","tube","strip_low","strip_high"}) {
+                String base=color.getName()+"_"+form;
+                for(int conversion=0;conversion<3;conversion++) {
+                    String from=base+(conversion==0?"":conversion==1?"_redstone":"_redstone_inverted");
+                    String to=base+(conversion==1?"_redstone_inverted":"_redstone");
+                    crafter.clearContent();chest.clearContent();
+                    crafter.setItem(0,LumaWorks.LIGHTS.get(from).get().asItem().getDefaultInstance());
+                    if(conversion==0)crafter.setItem(1,net.minecraft.world.item.Items.REDSTONE.getDefaultInstance());
+                    pulse.invoke(Blocks.CRAFTER,level.getBlockState(machine),level,machine);
+                    int count=0;for(int slot=0;slot<chest.getContainerSize();slot++)if(chest.getItem(slot).is(LumaWorks.LIGHTS.get(to).get().asItem()))count+=chest.getItem(slot).getCount();
+                    require(count==1&&crafter.isEmpty(),"actual Crafter upgrades/toggles small lights "+from);
+                }
+                if(form.startsWith("strip")) for(String suffix:new String[]{"_redstone","_redstone_inverted"}) {
+                    String from=base+suffix,to=color.getName()+"_"+(form.equals("strip_low")?"strip_high":"strip_low")+suffix;
+                    crafter.clearContent();chest.clearContent();
+                    crafter.setItem(0,LumaWorks.LIGHTS.get(from).get().asItem().getDefaultInstance());crafter.setItem(1,LumaWorks.LIGHTS.get(from).get().asItem().getDefaultInstance());
+                    pulse.invoke(Blocks.CRAFTER,level.getBlockState(machine),level,machine);
+                    int count=0;for(int slot=0;slot<chest.getContainerSize();slot++)if(chest.getItem(slot).is(LumaWorks.LIGHTS.get(to).get().asItem()))count+=chest.getItem(slot).getCount();
+                    require(count==2&&crafter.isEmpty(),"actual Crafter changes strip height without loss");
+                }
+            }
             for(boolean reverse:new boolean[]{false,true}) {
                 String inputName="cyan_panel"+(reverse?"_seamless":""),outputName="cyan_panel"+(reverse?"":"_seamless");
                 crafter.clearContent();chest.clearContent();
@@ -211,6 +245,36 @@ public final class LightingSmoke {
                 level.destroyBlock(origin,true);
                 var drops=level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,bounds);
                 require(drops.size()==1 && drops.getFirst().getItem().is(seamless.asItem()),"legacy drop migrates to seamless item "+name);
+            }
+            // All five small forms, every color and both modes: physical power changes,
+            // orientation/directions, water and actual crafting outputs.
+            for(var color:net.minecraft.world.item.DyeColor.values()) for(String form:new String[]{"fixture","bulb","tube","strip_low","strip_high"}) {
+                String base=color.getName()+"_"+form;
+                for(String suffix:new String[]{"redstone","redstone_inverted"}) {
+                    var block=LumaWorks.LIGHTS.get(base+"_"+suffix).get();
+                    var initial=block.defaultBlockState().setValue(ArchitecturalLight.WATER,true);
+                    if(initial.hasProperty(ArchitecturalLight.FACING))initial=initial.setValue(ArchitecturalLight.FACING,Direction.WEST);
+                    if(initial.hasProperty(ArchitecturalLight.EDGES))initial=initial.setValue(ArchitecturalLight.EDGES,5);
+                    level.removeBlock(origin.east(),false);
+                    level.setBlock(origin,initial,3);
+                    for(boolean powered:new boolean[]{true,false,true,false}) {
+                        level.setBlock(origin.east(),powered?Blocks.REDSTONE_BLOCK.defaultBlockState():Blocks.AIR.defaultBlockState(),3);
+                        var actual=level.getBlockState(origin);
+                        boolean lit=powered^suffix.equals("redstone_inverted");
+                        require(actual.getValue(ArchitecturalLight.LIT)==lit,"small light power mode "+base+suffix);
+                        require((actual.getLightEmission()>0)==lit,"small emission follows power");
+                        require(actual.getValue(ArchitecturalLight.WATER),"power preserves water");
+                        if(initial.hasProperty(ArchitecturalLight.FACING))require(actual.getValue(ArchitecturalLight.FACING)==Direction.WEST,"power preserves facing");
+                        if(initial.hasProperty(ArchitecturalLight.EDGES))require(actual.getValue(ArchitecturalLight.EDGES)==5,"power preserves strip mask");
+                    }
+                    var input=net.minecraft.world.item.crafting.CraftingInput.of(1,1,java.util.List.of(block.asItem().getDefaultInstance()));
+                    var recipe=server.getRecipeManager().getRecipeFor(net.minecraft.world.item.crafting.RecipeType.CRAFTING,input,level).orElseThrow().value();
+                    require(recipe.assemble(input).is(LumaWorks.LIGHTS.get(base+(suffix.equals("redstone")?"_redstone_inverted":"_redstone")).get().asItem()),"single-item mode toggle");
+                    level.removeBlock(origin,false);
+                }
+                var input=net.minecraft.world.item.crafting.CraftingInput.of(2,1,java.util.List.of(LumaWorks.LIGHTS.get(base).get().asItem().getDefaultInstance(),net.minecraft.world.item.Items.REDSTONE.getDefaultInstance()));
+                var upgrade=server.getRecipeManager().getRecipeFor(net.minecraft.world.item.crafting.RecipeType.CRAFTING,input,level).orElseThrow().value();
+                require(upgrade.assemble(input).is(LumaWorks.LIGHTS.get(base+"_redstone").get().asItem()),"vanilla redstone upgrade");
             }
             for (String type : new String[]{"signal", "inverse"}) {
                 Block block = LumaWorks.LIGHTS.get("white_" + type).get();
@@ -262,7 +326,7 @@ public final class LightingSmoke {
                 require(count==(mode==net.minecraft.world.level.GameType.SURVIVAL?1:0),"post drop count through actual player break: "+mode+" segment "+segment+" count "+count);
                 for(int part=0;part<3;part++)require(!level.getBlockState(origin.above(part)).is(column),"no orphan post segment");
             }
-            result = "PASS: " + checks + " runtime assertions; 224 lights; shapes, fluids, redstone, columns and directional editor (32 strip types, permissions and invalid requests).\n";
+            result = "PASS: " + checks + " runtime assertions; 432 lights; shapes, fluids, redstone, columns and directional editor (144 strip types, permissions and invalid requests).\n";
         } catch (Throwable failure) {
             failure.printStackTrace();
             result = "FAIL after " + checks + " checks: " + failure + "\n";
