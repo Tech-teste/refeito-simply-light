@@ -35,8 +35,11 @@ def png(path, color, seamless=False):
             edge = min(x, y, 31-x, 31-y)
             corner = min(x,31-x) + min(y,31-y)
             # A subtle, tileable 4px diffuser grain; no bevel/seam on frameless pieces.
-            grain = ((x % 4 * 3 + y % 4 * 5) % 7) - 3
-            shade = 1 + grain * .006
+            # Pixel clusters rather than a smooth gradient or uniform micro-noise.
+            # The 16px period tiles cleanly on adjoining frameless surfaces.
+            a, b = x // 2 % 8, y // 2 % 8
+            cluster = (a*a*13 + b*b*19 + a*b*7 + a*31 + b*17) % 9
+            shade = 1 + (-.028, -.018, -.009, 0, 0, 0, .009, .018, .028)[cluster]
             if seamless:
                 pixel = tuple(max(0,min(255,round(v*shade))) for v in rgb)
             elif edge < 2 or corner < 6:
@@ -45,6 +48,15 @@ def png(path, color, seamless=False):
                 pixel = tuple(round(v * .83) for v in rgb)
             else:
                 pixel = tuple(max(0,min(255,round(v*shade))) for v in rgb)
+            if path.endswith('housing_graphite.png') or path.endswith('socket_graphite.png'):
+                # Machined graphite: two-tone bands, sparse wear and recessed joints.
+                delta = (0, 2, -1, 1)[(x // 2 + y // 4) % 4]
+                if x % 16 == 0: delta = 12
+                elif x % 16 == 15: delta = -10
+                if y % 16 == 15: delta -= 7
+                if (x % 16, y % 16) in {(3,3),(12,12)}: delta = -15
+                if (x % 16, y % 16) in {(3,2),(12,11)}: delta = 17
+                pixel = tuple(max(0,min(255,v+delta)) for v in rgb)
             rows += bytes(pixel)
     target = ROOT / path
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -67,9 +79,10 @@ def small_fixture_model(name, color, form):
     """Separate the housing from the diffuser; small lights do not reuse cube-face borders."""
     if form == 'bulb':
         parts = [([5.5,0,5.5],[10.5,.75,10.5],'metal'),
-                 ([6.5,.75,6.5],[9.5,2,9.5],'socket'),
-                 ([6.5,2,6.5],[9.5,6.5,9.5],'light'),
-                 ([7,6.5,7],[9,7,9],'light')]
+                 ([6.25,.75,6.25],[9.75,1.5,9.75],'socket'),
+                 ([6.5,1.5,6.5],[9.5,2,9.5],'metal'),
+                 ([6.5,2,6.5],[9.5,6,9.5],'light'),
+                 ([7,6,7],[9,7,9],'light')]
     elif form == 'fixture':
         parts = [([4,0,4],[12,.8,12],'metal'),
                  ([4.5,.8,4.5],[11.5,1.2,11.5],'socket'),
@@ -109,8 +122,8 @@ def post_models(name, color):
     def solid(lo, hi):
         return {'from':lo,'to':hi,'shade':True,
                 'faces':{d:{'texture':'#metal'} for d in ['up','down','north','south','east','west']}}
-    foot=[solid([3,0,3],[13,1,13]),solid([4,1,4],[12,2,12]),
-          solid([5,2,5],[11,3,11]),solid([6,3,6],[10,5,10]),solid([6.5,5,6.5],[9.5,16,9.5])]
+    foot=[solid([3.5,0,3.5],[12.5,1,12.5]),solid([4.5,1,4.5],[11.5,2,11.5]),
+          solid([5.5,2,5.5],[10.5,3,10.5]),solid([6,3,6],[10,6,10]),solid([6.5,6,6.5],[9.5,16,9.5])]
     middle=[solid([6.5,0,6.5],[9.5,16,9.5])]
     head=[solid([6.5,0,6.5],[9.5,5,9.5]),solid([5,5,5],[11,6,11]),
           solid([4,6,4],[12,7,12]),solid([3,7,3],[13,15,13]),
