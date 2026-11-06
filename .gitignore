@@ -8,3 +8,6 @@ __pycache__/
 .env*
 Thumbs.db
 .DS_Store
+
+src/main/resources/assets/
+src/main/resources/data/

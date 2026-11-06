@@ -1,5 +1,5 @@
 plugins { id 'java-library'; id 'net.neoforged.moddev' version '2.0.148' }
-version = '0.1.0-alpha.16+26.1.2'
+version = '0.1.0-alpha.26+26.1.2'
 group = 'br.lumaworks'
 base { archivesName = 'luma-works' }
 java { toolchain.languageVersion = JavaLanguageVersion.of(25); withSourcesJar() }
@@ -29,23 +29,42 @@ if (project.hasProperty('smokeTest')) {
     sourceSets.main.java.srcDir 'src/smoke/java'
     neoForge.runs.server.systemProperty 'lumaworks.smoke', 'true'
 }
-repositories { maven { url = 'https://maven.blamejared.com' } }
-dependencies { compileOnly 'mezz.jei:jei-26.1.2-common-api:29.47.0.111' }
-
-def generatedResources = layout.buildDirectory.dir('generated/lumaworks-resources')
-def generateLightingResources = tasks.register('generateLightingResources', Exec) {
-    inputs.files(fileTree('tools') { include '*.py', '*.json' })
-    outputs.dir generatedResources
-    commandLine(System.getProperty('os.name').toLowerCase().contains('windows') ? 'python' : 'python3',
-        'tools/build_resources.py', generatedResources.get().asFile.absolutePath)
+if (project.hasProperty('showcase')) {
+    sourceSets.main.java.srcDir 'src/showcase/java'
+    neoForge.runs.server.gameDirectory = file('run-showcase')
 }
-tasks.named('processResources') {
-    dependsOn generateLightingResources
-    from generatedResources
+
+repositories { maven { url = "https://maven.blamejared.com" } }
+dependencies { compileOnly "mezz.jei:jei-26.1.2-common-api:29.47.0.111" }
+
+if (project.hasProperty('standaloneAudit')) {
+    sourceSets { standaloneAudit { java.srcDir 'src/standaloneAudit/java' } }
+    sourceSets.standaloneAudit.java.srcDir 'src/rgbAudit/java'
+    sourceSets.standaloneAudit.compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
+    tasks.named('compileStandaloneAuditJava') { dependsOn tasks.named('classes') }
+}
+
+// Local full-pack verification code is excluded from every release artifact.
+if (project.hasProperty('packAudit')) {
+    sourceSets { packAudit { java.srcDir 'src/packAudit/java' } }
+    sourceSets.packAudit.compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output +
+        files(fileTree(providers.gradleProperty('testInstance').get() + '/mods') { include '*.jar' })
+    tasks.named('compilePackAuditJava') { dependsOn tasks.named('classes') }
+}
+
+// Generate original assets from reviewed sources on a fresh checkout, including CI.
+def resourcePython = System.getProperty('os.name').toLowerCase().contains('windows') ? 'python' : 'python3'
+tasks.register('generateLightingResources', Exec) {
+    workingDir projectDir
+    commandLine resourcePython, 'tools/generate_resources.py'
+    inputs.files(fileTree('tools') { include '*.py', 'finishing_resources.json' })
+    outputs.dirs('src/main/resources/assets/lumaworks', 'src/main/resources/data')
 }
 tasks.register('verifyLightingResources', Exec) {
-    dependsOn generateLightingResources
-    commandLine(System.getProperty('os.name').toLowerCase().contains('windows') ? 'python' : 'python3',
-        'tools/verify_resources.py', generatedResources.get().asFile.absolutePath)
+    dependsOn 'generateLightingResources'
+    workingDir projectDir
+    commandLine resourcePython, 'tools/verify_resources.py', 'src/main/resources'
 }
-tasks.named('check') { dependsOn 'verifyLightingResources' }
+tasks.named('processResources') { dependsOn 'verifyLightingResources' }
+
+tasks.named('sourcesJar') { dependsOn 'verifyLightingResources' }
