@@ -10,6 +10,26 @@ neoForge {
 }
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
 tasks.named('jar') { from('LICENSE.txt'); from('third-party') { into 'META-INF/licenses' } }
+
+// Generated JSON uses LF on every host so Windows and Linux package identical bytes.
+tasks.named('processResources') {
+    inputs.property('lightingJsonLineEndings', 'LF-v1')
+    filesMatching('**/*.json') {
+        filter([eol: org.apache.tools.ant.filters.FixCrLfFilter.CrLf.newInstance('lf')],
+            org.apache.tools.ant.filters.FixCrLfFilter)
+    }
+}
+
+
+// Generated JSON uses LF on every host so Windows and Linux package identical bytes.
+tasks.named('processResources') {
+    inputs.property('lightingJsonLineEndings', 'LF-v1')
+    filesMatching('**/*.json') {
+        filter([eol: org.apache.tools.ant.filters.FixCrLfFilter.CrLf.newInstance('lf')],
+            org.apache.tools.ant.filters.FixCrLfFilter)
+    }
+}
+
 sourceSets.main.java.srcDir 'src/client/java'
 // Build-only API; never bundled or required at runtime. Pinned official Sodium release.
 repositories { maven { url = 'https://api.modrinth.com/maven' } }
