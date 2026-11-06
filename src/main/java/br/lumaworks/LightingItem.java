@@ -15,7 +15,7 @@ public final class LightingItem extends BlockItem {
         this.form = form;
     }
     private static Properties propertiesFor(Properties properties, LightForm form) {
-        properties.equippable(net.minecraft.world.entity.EquipmentSlot.HEAD);
+        properties.useBlockDescriptionPrefix().equippable(net.minecraft.world.entity.EquipmentSlot.HEAD);
         if (form == LightForm.COLUMN) properties.attributes(
             net.minecraft.world.item.component.ItemAttributeModifiers.builder()
                 .add(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE,
