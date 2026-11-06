@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "started_without_generated_resources": true,
+  "automatic_generation_and_recipe_validation": true,
+  "sourcesJar_dependency_declared": true,
+  "same_jar_as_curseforge_submission": true,
+  "sha256": "ce5198c76db57c89b8224d5cc593e9fd208fe32db195cef28be633a82cbbed56",
+  "scope": "local fresh source tree, not yet remote checkout CI"
+}

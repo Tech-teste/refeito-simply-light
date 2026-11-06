@@ -1,0 +1,46 @@
+{
+  "status": "PASS",
+  "actual_cycle_widget": true,
+  "close_saves_native_configuration": true,
+  "both_directions_tested": true,
+  "native_rgb_state_observed_by_driver": true,
+  "cross_process_preference_persistence": "NOT TESTED in this GUI-specific run",
+  "tests": {
+    "en_us": [
+      {
+        "language": "en_us",
+        "before": false,
+        "action": "settings_toggle_save",
+        "after": true,
+        "actual_native_widget": true,
+        "status": "PASS"
+      },
+      {
+        "language": "en_us",
+        "before": true,
+        "action": "settings_toggle_save",
+        "after": false,
+        "actual_native_widget": true,
+        "status": "PASS"
+      }
+    ],
+    "pt_br": [
+      {
+        "language": "pt_br",
+        "before": false,
+        "action": "settings_toggle_save",
+        "after": true,
+        "actual_native_widget": true,
+        "status": "PASS"
+      },
+      {
+        "language": "pt_br",
+        "before": true,
+        "action": "settings_toggle_save",
+        "after": false,
+        "actual_native_widget": true,
+        "status": "PASS"
+      }
+    ]
+  }
+}

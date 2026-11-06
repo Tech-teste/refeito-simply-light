@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "remote_commit": "5276d82aadec788e2187d2ee3c0de5340eedc0df",
+  "remote_branch": "review/alpha25-quality",
+  "fresh_clone_from_github": true,
+  "automatic_resources_generated": true,
+  "jar_byte_identical_to_tested_and_submitted": true,
+  "jar_sha256": "ce5198c76db57c89b8224d5cc593e9fd208fe32db195cef28be633a82cbbed56",
+  "scope": "ordinary runtime build on Windows; not hosted Linux CI or smoke flag",
+  "remaining": [
+    "smoke test source update",
+    "review documentation",
+    "README presentation",
+    "main/release publication"
+  ]
+}
